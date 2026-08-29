@@ -15,15 +15,15 @@ export default async function RegisterPage({
 
   async function handleRegister() {
     'use server'
+    let cardId: string
     try {
-      const cardId = await registerCard()
-      redirect(`/register?newId=${cardId}`)
-    } catch (err: unknown) {
-      // redirect() throws internally — let it propagate
-      if (err instanceof Error && err.message === 'NEXT_REDIRECT') throw err
+      cardId = await registerCard()
+    } catch (err) {
       const msg = err instanceof Error ? err.message : 'Gagal terhubung ke database'
       redirect(`/register?error=${encodeURIComponent(msg)}`)
+      return
     }
+    redirect(`/register?newId=${cardId}`)
   }
 
   const nfcUrl = newId ? `${protocol}://${host}/r/${newId}` : null
