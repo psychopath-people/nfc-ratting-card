@@ -6,17 +6,24 @@ import { WriteNFCButton } from '@/components/write-nfc-button'
 export default async function RegisterPage({
   searchParams,
 }: {
-  searchParams: Promise<{ newId?: string }>
+  searchParams: Promise<{ newId?: string; error?: string }>
 }) {
-  const { newId } = await searchParams
+  const { newId, error } = await searchParams
   const headersList = await headers()
   const host = headersList.get('host') || 'localhost:3000'
   const protocol = host.includes('localhost') ? 'http' : 'https'
 
   async function handleRegister() {
     'use server'
-    const cardId = await registerCard()
-    redirect(`/register?newId=${cardId}`)
+    try {
+      const cardId = await registerCard()
+      redirect(`/register?newId=${cardId}`)
+    } catch (err: unknown) {
+      // redirect() throws internally — let it propagate
+      if (err instanceof Error && err.message === 'NEXT_REDIRECT') throw err
+      const msg = err instanceof Error ? err.message : 'Gagal terhubung ke database'
+      redirect(`/register?error=${encodeURIComponent(msg)}`)
+    }
   }
 
   const nfcUrl = newId ? `${protocol}://${host}/r/${newId}` : null
@@ -32,6 +39,15 @@ export default async function RegisterPage({
             Generate ID → Tulis ke tag → Setup lokasi bisnis.
           </p>
         </div>
+
+        {/* Error state */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+            <p className="text-sm font-semibold text-red-800 mb-1">❌ Gagal mendaftarkan kartu</p>
+            <p className="text-xs text-red-600">{decodeURIComponent(error)}</p>
+            <p className="text-xs text-red-500 mt-2">Cek env variables di Vercel (GOOGLE_SHEET_ID, GOOGLE_SERVICE_ACCOUNT_EMAIL, GOOGLE_PRIVATE_KEY)</p>
+          </div>
+        )}
 
         {/* Hasil: card baru berhasil dibuat */}
         {newId && nfcUrl && (

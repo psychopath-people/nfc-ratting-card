@@ -7,10 +7,13 @@ const SHEET_NAME = 'Cards'
 // Schema: card_id | cafe_name | maps_url | tap_count | status | created_at | updated_at
 
 function getAuth() {
+  const raw = process.env.GOOGLE_PRIVATE_KEY || ''
+  // Handle both literal \n (from .env.local) and actual newlines (from Vercel UI)
+  const privateKey = raw.replace(/\\n/g, '\n')
   return new google.auth.GoogleAuth({
     credentials: {
       client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-      private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      private_key: privateKey,
     },
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
   })
