@@ -1,14 +1,17 @@
 import { google } from 'googleapis'
 import { randomBytes } from 'crypto'
 
-const SHEET_ID = process.env.GOOGLE_SHEET_ID!
 const SHEET_NAME = 'Cards'
 
-// Schema: card_id | cafe_name | maps_url | tap_count | status | created_at | updated_at
+// Read env vars inside functions so they're evaluated at request time, not build time
+function getSheetId(): string {
+  const id = process.env.GOOGLE_SHEET_ID
+  if (!id) throw new Error('GOOGLE_SHEET_ID env var tidak di-set')
+  return id
+}
 
 function getAuth() {
   const raw = process.env.GOOGLE_PRIVATE_KEY || ''
-  // Handle both literal \n (from .env.local) and actual newlines (from Vercel UI)
   const privateKey = raw.replace(/\\n/g, '\n')
   return new google.auth.GoogleAuth({
     credentials: {
@@ -44,18 +47,17 @@ export type Card = {
 async function getAllRows() {
   const sheets = getSheets()
   const response = await sheets.spreadsheets.values.get({
-    spreadsheetId: SHEET_ID,
+    spreadsheetId: getSheetId(),
     range: `${SHEET_NAME}!A:G`,
   })
   const rows = response.data.values || []
-  return rows.slice(1) // skip header
+  return rows.slice(1)
 }
 
 export async function findCard(cardId: string): Promise<Card | null> {
   const dataRows = await getAllRows()
   const rowIndex = dataRows.findIndex((row) => row[0] === cardId)
   if (rowIndex === -1) return null
-
   const row = dataRows[rowIndex]
   return {
     cardId: row[0] || '',
@@ -83,58 +85,33 @@ export async function getAllCards(): Promise<Card[]> {
 
 export async function registerCard(): Promise<string> {
   const sheets = getSheets()
-
-  // Generate unique ID — retry if collision
   const existingCards = await getAllCards()
   const existingIds = new Set(existingCards.map((c) => c.cardId))
   let cardId = generateCardId()
-  while (existingIds.has(cardId)) {
-    cardId = generateCardId()
-  }
+  while (existingIds.has(cardId)) cardId = generateCardId()
 
   await sheets.spreadsheets.values.append({
-    spreadsheetId: SHEET_ID,
+    spreadsheetId: getSheetId(),
     range: `${SHEET_NAME}!A:G`,
     valueInputOption: 'RAW',
     requestBody: {
-      values: [[
-        cardId,
-        '',
-        '',
-        0,
-        'registered',
-        new Date().toISOString(),
-        '',
-      ]],
+      values: [[cardId, '', '', 0, 'registered', new Date().toISOString(), '']],
     },
   })
-
   return cardId
 }
 
-export async function setupCard(
-  cardId: string,
-  cafeName: string,
-  mapsUrl: string
-) {
+export async function setupCard(cardId: string, cafeName: string, mapsUrl: string) {
   const sheets = getSheets()
   const existing = await findCard(cardId)
   if (!existing) throw new Error('Card not registered')
 
   await sheets.spreadsheets.values.update({
-    spreadsheetId: SHEET_ID,
+    spreadsheetId: getSheetId(),
     range: `${SHEET_NAME}!A${existing.rowNumber}:G${existing.rowNumber}`,
     valueInputOption: 'RAW',
     requestBody: {
-      values: [[
-        cardId,
-        cafeName,
-        mapsUrl,
-        existing.tapCount,
-        'active',
-        existing.createdAt,
-        new Date().toISOString(),
-      ]],
+      values: [[cardId, cafeName, mapsUrl, existing.tapCount, 'active', existing.createdAt, new Date().toISOString()]],
     },
   })
 }
@@ -142,11 +119,9 @@ export async function setupCard(
 export async function incrementTapCount(rowNumber: number, currentCount: number) {
   const sheets = getSheets()
   await sheets.spreadsheets.values.update({
-    spreadsheetId: SHEET_ID,
+    spreadsheetId: getSheetId(),
     range: `${SHEET_NAME}!D${rowNumber}`,
     valueInputOption: 'RAW',
-    requestBody: {
-      values: [[currentCount + 1]],
-    },
+    requestBody: { values: [[currentCount + 1]] },
   })
 }
