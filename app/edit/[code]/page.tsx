@@ -19,25 +19,23 @@ function EyeIcon({ open }: { open: boolean }) {
   )
 }
 
+function isGoogleUrl(url: string) {
+  try {
+    const u = new URL(url)
+    return ['google.com', 'goo.gl', 'maps.app.goo.gl', 'g.page', 'g.co'].some(d => u.hostname.includes(d))
+  } catch { return false }
+}
+
 export default function EditPage() {
   const params = useParams()
   const code = params.code as string
   const router = useRouter()
 
   const [loadingCard, setLoadingCard] = useState(true)
-  const [currentReviewUrl, setCurrentReviewUrl] = useState('')
-
+  const [cafeName, setCafeName] = useState('')
+  const [mapsUrl, setMapsUrl] = useState('')
   const [currentPin, setCurrentPin] = useState('')
   const [showCurrentPin, setShowCurrentPin] = useState(false)
-  const [cafeName, setCafeName] = useState('')
-
-  // Maps URL change (optional)
-  const [mapsUrl, setMapsUrl] = useState('')
-  const [verifying, setVerifying] = useState(false)
-  const [verifyError, setVerifyError] = useState('')
-  const [newReviewUrl, setNewReviewUrl] = useState('')
-  const [mapsVerified, setMapsVerified] = useState(false)
-
   const [newPin, setNewPin] = useState('')
   const [showNewPin, setShowNewPin] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -46,74 +44,35 @@ export default function EditPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
 
+  const urlOk = mapsUrl.length > 0 && isGoogleUrl(mapsUrl)
+  const urlBad = mapsUrl.length > 0 && !isGoogleUrl(mapsUrl)
+
   useEffect(() => {
     fetch(`/api/card-info?code=${code}`)
-      .then((r) => r.json())
-      .then((d) => {
+      .then(r => r.json())
+      .then(d => {
         if (d.cafeName !== undefined) {
           setCafeName(d.cafeName)
-          setCurrentReviewUrl(d.reviewUrl || '')
+          setMapsUrl(d.reviewUrl || '')
         }
       })
       .catch(() => {})
       .finally(() => setLoadingCard(false))
   }, [code])
 
-  async function handleVerifyMaps() {
-    if (!mapsUrl.trim()) return
-    setVerifying(true)
-    setVerifyError('')
-    setMapsVerified(false)
-    try {
-      const res = await fetch('/api/resolve-maps-url', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: mapsUrl.trim() }),
-      })
-      const data = await res.json()
-      if (!res.ok) {
-        setVerifyError(data.error || 'Gagal memverifikasi link')
-        return
-      }
-      setNewReviewUrl(data.reviewUrl)
-      if (data.cafeName) setCafeName(data.cafeName)
-      setMapsVerified(true)
-    } catch {
-      setVerifyError('Tidak dapat terhubung ke server')
-    } finally {
-      setVerifying(false)
-    }
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
-
-    if (!/^\d{4}$/.test(currentPin)) {
-      setError('PIN saat ini harus 4 digit angka')
-      return
-    }
-    if (!cafeName.trim()) {
-      setError('Nama bisnis wajib diisi')
-      return
-    }
-    if (newPin && !/^\d{4}$/.test(newPin)) {
-      setError('PIN baru harus 4 digit angka')
-      return
-    }
+    if (!/^\d{4}$/.test(currentPin)) { setError('PIN saat ini harus 4 digit'); return }
+    if (!cafeName.trim()) { setError('Nama bisnis wajib diisi'); return }
+    if (newPin && !/^\d{4}$/.test(newPin)) { setError('PIN baru harus 4 digit'); return }
 
     setSubmitting(true)
     try {
       const res = await fetch('/api/edit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          code,
-          currentPin,
-          cafeName: cafeName.trim(),
-          reviewUrl: mapsVerified ? newReviewUrl : currentReviewUrl,
-          newPin: newPin || undefined,
-        }),
+        body: JSON.stringify({ code, currentPin, cafeName: cafeName.trim(), mapsUrl: mapsUrl.trim(), newPin: newPin || undefined }),
       })
       const data = await res.json()
       if (res.ok) {
@@ -130,11 +89,7 @@ export default function EditPage() {
   }
 
   async function handleReset() {
-    if (!/^\d{4}$/.test(currentPin)) {
-      setError('Masukkan PIN saat ini terlebih dahulu')
-      setShowResetConfirm(false)
-      return
-    }
+    if (!/^\d{4}$/.test(currentPin)) { setError('Masukkan PIN saat ini terlebih dahulu'); setShowResetConfirm(false); return }
     setResetting(true)
     setError('')
     try {
@@ -144,18 +99,12 @@ export default function EditPage() {
         body: JSON.stringify({ code, currentPin }),
       })
       const data = await res.json()
-      if (res.ok) {
-        router.push(`/activate/${code}`)
-      } else {
-        setError(data.error || 'Gagal reset kartu')
-        setShowResetConfirm(false)
-      }
+      if (res.ok) { router.push(`/activate/${code}`) }
+      else { setError(data.error || 'Gagal reset'); setShowResetConfirm(false) }
     } catch {
       setError('Tidak dapat terhubung ke server')
       setShowResetConfirm(false)
-    } finally {
-      setResetting(false)
-    }
+    } finally { setResetting(false) }
   }
 
   if (success) {
@@ -177,11 +126,9 @@ export default function EditPage() {
       <div className="w-full max-w-sm">
         <div className="bg-white rounded-2xl shadow-sm p-6 space-y-5">
 
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <h1 className="text-2xl font-bold text-gray-900">Edit Kartu</h1>
-            <p className="text-sm text-gray-500">
-              Kode kartu: <strong className="text-gray-800">{code}</strong>
-            </p>
+            <p className="text-sm text-gray-500">Kode: <strong className="text-gray-800">{code}</strong></p>
           </div>
 
           {error && (
@@ -192,14 +139,13 @@ export default function EditPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
 
-            {/* PIN Saat Ini */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">PIN Saat Ini</label>
               <div className="relative">
                 <input
                   type={showCurrentPin ? 'text' : 'password'}
                   value={currentPin}
-                  onChange={(e) => setCurrentPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                  onChange={e => setCurrentPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
                   placeholder="••••"
                   inputMode="numeric"
                   maxLength={4}
@@ -213,13 +159,12 @@ export default function EditPage() {
               <p className="mt-1.5 text-xs text-blue-600 cursor-pointer hover:underline">Lupa PIN? Hubungi Admin</p>
             </div>
 
-            {/* Nama Bisnis */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Nama Bisnis</label>
               <input
                 type="text"
                 value={cafeName}
-                onChange={(e) => setCafeName(e.target.value)}
+                onChange={e => setCafeName(e.target.value)}
                 placeholder={loadingCard ? 'Memuat...' : 'Nama bisnis kamu'}
                 required
                 disabled={loadingCard}
@@ -227,52 +172,33 @@ export default function EditPage() {
               />
             </div>
 
-            {/* Ganti Titik Bisnis (opsional) */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700">Ganti Titik Bisnis</label>
-                <span className="text-xs text-gray-400">Opsional</span>
-              </div>
-
-              {currentReviewUrl && !mapsVerified && (
-                <div className="flex items-center gap-2 bg-gray-50 border border-gray-100 rounded-xl px-3 py-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-green-500 flex-shrink-0">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
-                  </svg>
-                  <p className="text-xs text-gray-500">Titik bisnis sudah tersimpan. Isi di bawah untuk menggantinya.</p>
-                </div>
-              )}
-
-              {mapsVerified && (
-                <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-3 py-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-green-500 flex-shrink-0">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
-                  </svg>
-                  <p className="text-xs text-green-700 font-medium">Titik baru terverifikasi — akan disimpan saat kamu submit</p>
-                </div>
-              )}
-
-              <div className="flex gap-2">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Link Google Maps</label>
+              <p className="text-xs text-gray-400 mb-2">Buka Google Maps → bisnis → <strong>Bagikan</strong> → copy link</p>
+              <div className="relative">
                 <input
                   type="url"
                   value={mapsUrl}
-                  onChange={(e) => { setMapsUrl(e.target.value); setMapsVerified(false); setVerifyError('') }}
+                  onChange={e => setMapsUrl(e.target.value)}
                   placeholder="https://maps.app.goo.gl/..."
-                  className="flex-1 px-3 py-2.5 rounded-xl border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  disabled={loadingCard}
+                  className={`w-full px-4 py-3 rounded-xl border text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 text-sm pr-10 disabled:opacity-60 ${
+                    urlOk ? 'border-green-300 focus:ring-green-400' :
+                    urlBad ? 'border-red-300 focus:ring-red-400' :
+                    'border-gray-200 focus:ring-blue-500'
+                  }`}
                 />
-                <button
-                  type="button"
-                  onClick={handleVerifyMaps}
-                  disabled={!mapsUrl.trim() || verifying}
-                  className="px-4 py-2.5 rounded-xl bg-gray-700 hover:bg-gray-800 disabled:opacity-50 text-white text-sm font-semibold transition-colors flex-shrink-0"
-                >
-                  {verifying ? '...' : 'Verifikasi'}
-                </button>
+                {urlOk && (
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-green-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                    </svg>
+                  </span>
+                )}
               </div>
-              {verifyError && <p className="text-xs text-red-500">{verifyError}</p>}
+              {urlBad && <p className="mt-1 text-xs text-red-500">Harus link dari Google Maps</p>}
             </div>
 
-            {/* PIN Baru */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 PIN Baru <span className="text-gray-400 font-normal">(opsional)</span>
@@ -281,7 +207,7 @@ export default function EditPage() {
                 <input
                   type={showNewPin ? 'text' : 'password'}
                   value={newPin}
-                  onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                  onChange={e => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
                   placeholder="••••"
                   inputMode="numeric"
                   maxLength={4}
@@ -295,7 +221,7 @@ export default function EditPage() {
 
             <button
               type="submit"
-              disabled={submitting}
+              disabled={submitting || urlBad}
               className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold py-3.5 px-4 rounded-xl transition-colors text-sm"
             >
               {submitting ? 'Menyimpan...' : 'Simpan Perubahan'}
@@ -316,9 +242,7 @@ export default function EditPage() {
               <div className="space-y-2">
                 <p className="text-xs text-red-600 font-medium">Yakin ingin reset? Semua data akan dihapus.</p>
                 <div className="flex gap-2">
-                  <button type="button" onClick={() => setShowResetConfirm(false)} className="flex-1 py-2.5 px-4 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-medium transition-colors">
-                    Batal
-                  </button>
+                  <button type="button" onClick={() => setShowResetConfirm(false)} className="flex-1 py-2.5 px-4 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-medium transition-colors">Batal</button>
                   <button type="button" onClick={handleReset} disabled={resetting} className="flex-1 py-2.5 px-4 rounded-xl bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white text-sm font-semibold transition-colors">
                     {resetting ? 'Mereset...' : 'Ya, Reset'}
                   </button>
