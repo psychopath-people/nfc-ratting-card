@@ -6,7 +6,7 @@ export default function PrintHeader({ count }: { count: number }) {
       <div>
         <h1 className="text-base font-bold">{count} Kartu Siap Print</h1>
         <p className="text-xs text-gray-300">
-          2 kartu per baris · Aktifkan &quot;Background graphics&quot; di dialog print
+          Tulis NFC dulu per kartu → baru print · Aktifkan &quot;Background graphics&quot; di dialog print
         </p>
       </div>
       <div className="flex gap-3 flex-wrap">

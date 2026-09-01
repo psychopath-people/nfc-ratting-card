@@ -1,6 +1,7 @@
 import { generateQRDataURL } from '@/lib/qr'
 import { headers } from 'next/headers'
 import PrintHeader from './PrintHeader'
+import NfcWriteButton from './NfcWriteButton'
 
 interface CardItem {
   id: string
@@ -194,6 +195,11 @@ export default async function PrintPreviewPage({
                 <p style={{ fontSize: '8px', color: '#d1d5db', margin: 0, maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {url}
                 </p>
+              </div>
+
+              {/* NFC write button — screen only, tidak ikut print */}
+              <div className="no-print px-3 pb-3 pt-1">
+                <NfcWriteButton url={url} />
               </div>
             </div>
           ))}
