@@ -2,25 +2,25 @@
 
 export default function PrintHeader({ count }: { count: number }) {
   return (
-    <div className="no-print bg-gray-800 text-white px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
+    <div className="no-print bg-gray-900 text-white px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
       <div>
-        <h1 className="text-base font-bold">{count} Kartu Siap Print</h1>
-        <p className="text-xs text-gray-300">
-          Tulis NFC dulu per kartu → baru print · Aktifkan &quot;Background graphics&quot; di dialog print
+        <p className="text-sm font-semibold">{count} kartu siap</p>
+        <p className="text-xs text-gray-400 mt-0.5">
+          Tulis NFC per kartu terlebih dahulu, lalu print — aktifkan Background graphics di dialog print
         </p>
       </div>
       <div className="flex gap-3 flex-wrap">
         <button
           onClick={() => window.print()}
-          className="bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
+          className="bg-white text-gray-900 text-sm font-semibold px-5 py-2 rounded-lg transition-colors hover:bg-gray-100"
         >
-          🖨️ Print Sekarang
+          Print
         </button>
         <a
           href="/print"
-          className="bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-colors"
+          className="border border-gray-700 text-gray-300 hover:text-white text-sm font-medium px-5 py-2 rounded-lg transition-colors"
         >
-          ← Generate Lagi
+          Kembali
         </a>
       </div>
     </div>

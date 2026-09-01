@@ -14,47 +14,42 @@ export default async function ActivatedPage({
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <main className="min-h-screen bg-white flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
-        <div className="bg-white rounded-2xl shadow-sm p-6 space-y-5">
 
-          <div className="space-y-1.5">
-            <h1 className="text-2xl font-bold text-gray-900">Kartu Sudah Aktif</h1>
-            <p className="text-sm text-gray-500 leading-relaxed">
-              Kartu <strong className="text-gray-800">{code}</strong> berhasil diaktifkan dan sudah bisa digunakan.
-              Silakan cek dengan tap kartu NFC atau scan QR di kartu Anda untuk memastikan link menuju halaman review.
-            </p>
+        <div className="mb-8">
+          <div className="w-10 h-10 rounded-full border-2 border-gray-900 flex items-center justify-center mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-gray-900">
+              <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+            </svg>
           </div>
-
-          {card.reviewUrl && (
-            <a
-              href={card.reviewUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3.5 px-4 rounded-xl transition-colors text-sm"
-            >
-              Buka Halaman Review
-            </a>
-          )}
-
-          <div className="border-t border-gray-100" />
-
-          <div className="space-y-3">
-            <p className="text-sm text-gray-500 leading-relaxed">
-              Salah isi nama bisnis atau link review? Anda bisa mengeditnya sendiri kapan saja.
-            </p>
-            <a
-              href={`/edit/${code}`}
-              className="text-sm font-semibold text-blue-600 hover:underline"
-            >
-              Edit Info Kartu →
-            </a>
-            <p className="text-xs text-gray-400 leading-relaxed">
-              Simpan atau bookmark halaman ini. Anda akan diminta PIN yang tadi dibuat untuk masuk ke halaman edit.
-            </p>
-          </div>
-
+          <p className="text-xs font-mono text-gray-400 uppercase tracking-widest mb-2">{code}</p>
+          <h1 className="text-2xl font-semibold text-gray-900">Kartu Aktif</h1>
+          <p className="text-sm text-gray-500 mt-1 leading-relaxed">
+            Kartu sudah terhubung ke Google Review. Pelanggan bisa tap NFC atau scan QR untuk langsung memberi ulasan.
+          </p>
         </div>
+
+        {card.reviewUrl && (
+          <a
+            href={card.reviewUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block w-full text-center bg-gray-900 hover:bg-gray-800 text-white font-medium py-3 px-4 rounded-lg transition-colors text-sm mb-6"
+          >
+            Buka Halaman Review
+          </a>
+        )}
+
+        <div className="border-t border-gray-100 pt-5 space-y-2">
+          <a href={`/edit/${code}`} className="block text-sm font-medium text-gray-900 hover:underline">
+            Edit info kartu
+          </a>
+          <p className="text-xs text-gray-400 leading-relaxed">
+            Simpan halaman ini. PIN yang tadi dibuat diperlukan untuk mengakses halaman edit.
+          </p>
+        </div>
+
       </div>
     </main>
   )
