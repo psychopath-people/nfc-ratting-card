@@ -9,8 +9,12 @@ export async function GET(
   const { id } = await params
   const card = await findCard(id)
 
-  if (!card || card.status !== 'active' || !card.reviewUrl) {
+  if (!card || card.status !== 'active') {
     redirect(`/activate/${id}`)
+  }
+
+  if (!card.reviewUrl) {
+    redirect(`/edit/${id}`)
   }
 
   incrementTapCount(card.rowNumber, card.tapCount).catch(() => {})

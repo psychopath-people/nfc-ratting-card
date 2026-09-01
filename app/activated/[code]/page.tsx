@@ -26,25 +26,41 @@ export default async function ActivatedPage({
           <p className="text-xs font-mono text-gray-400 uppercase tracking-widest mb-2">{code}</p>
           <h1 className="text-2xl font-semibold text-gray-900">Kartu Aktif</h1>
           <p className="text-sm text-gray-500 mt-1 leading-relaxed">
-            Kartu sudah terhubung ke Google Review. Pelanggan bisa tap NFC atau scan QR untuk langsung memberi ulasan.
+            {card.reviewUrl
+              ? 'Kartu sudah terhubung ke Google Review. Pelanggan bisa tap NFC atau scan QR untuk langsung memberi ulasan.'
+              : 'Kartu berhasil diaktifkan. Satu langkah lagi — hubungkan ke lokasi Google Maps bisnis kamu.'}
           </p>
         </div>
 
-        {card.reviewUrl && (
-          <a
-            href={card.reviewUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block w-full text-center bg-gray-900 hover:bg-gray-800 text-white font-medium py-3 px-4 rounded-lg transition-colors text-sm mb-6"
-          >
-            Buka Halaman Review
-          </a>
+        {card.reviewUrl ? (
+          <div className="space-y-3 mb-6">
+            <a
+              href={card.reviewUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full text-center bg-gray-900 hover:bg-gray-800 text-white font-medium py-3 px-4 rounded-lg transition-colors text-sm"
+            >
+              Buka Halaman Review
+            </a>
+            <a
+              href={`/edit/${code}`}
+              className="block w-full text-center border border-gray-200 text-gray-700 hover:bg-gray-50 font-medium py-3 px-4 rounded-lg transition-colors text-sm"
+            >
+              Edit Info Kartu
+            </a>
+          </div>
+        ) : (
+          <div className="space-y-3 mb-6">
+            <a
+              href={`/edit/${code}`}
+              className="block w-full text-center bg-gray-900 hover:bg-gray-800 text-white font-medium py-3 px-4 rounded-lg transition-colors text-sm"
+            >
+              Hubungkan ke Google Maps
+            </a>
+          </div>
         )}
 
-        <div className="border-t border-gray-100 pt-5 space-y-2">
-          <a href={`/edit/${code}`} className="block text-sm font-medium text-gray-900 hover:underline">
-            Edit info kartu
-          </a>
+        <div className="border-t border-gray-100 pt-5">
           <p className="text-xs text-gray-400 leading-relaxed">
             Simpan halaman ini. PIN yang tadi dibuat diperlukan untuk mengakses halaman edit.
           </p>
