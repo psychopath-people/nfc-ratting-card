@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 function EyeIcon({ open }: { open: boolean }) {
@@ -19,30 +19,74 @@ function EyeIcon({ open }: { open: boolean }) {
   )
 }
 
-function isGoogleUrl(url: string) {
-  try {
-    const u = new URL(url)
-    return ['google.com', 'goo.gl', 'maps.app.goo.gl', 'g.page', 'g.co'].some(d => u.hostname.includes(d))
-  } catch { return false }
+interface Place {
+  placeId: string
+  name: string
+  address: string
+  reviewUrl: string
 }
 
 export default function ActivateForm({ code }: { code: string }) {
-  const [cafeName, setCafeName] = useState('')
-  const [mapsUrl, setMapsUrl] = useState('')
+  const [query, setQuery] = useState('')
+  const [suggestions, setSuggestions] = useState<Place[]>([])
+  const [searching, setSearching] = useState(false)
+  const [selectedPlace, setSelectedPlace] = useState<Place | null>(null)
+  const [showDropdown, setShowDropdown] = useState(false)
+
   const [pin, setPin] = useState('')
   const [showPin, setShowPin] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const wrapperRef = useRef<HTMLDivElement>(null)
 
-  const urlOk = mapsUrl.length > 0 && isGoogleUrl(mapsUrl)
-  const urlBad = mapsUrl.length > 0 && !isGoogleUrl(mapsUrl)
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        setShowDropdown(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  function handleQueryChange(val: string) {
+    setQuery(val)
+    setSelectedPlace(null)
+    setShowDropdown(false)
+
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    if (val.trim().length < 2) { setSuggestions([]); return }
+
+    debounceRef.current = setTimeout(async () => {
+      setSearching(true)
+      try {
+        const res = await fetch(`/api/places?q=${encodeURIComponent(val.trim())}`)
+        const data = await res.json()
+        setSuggestions(data)
+        setShowDropdown(data.length > 0)
+      } catch {
+        setSuggestions([])
+      } finally {
+        setSearching(false)
+      }
+    }, 400)
+  }
+
+  function handleSelect(place: Place) {
+    setSelectedPlace(place)
+    setQuery(place.name)
+    setSuggestions([])
+    setShowDropdown(false)
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
-    if (!cafeName.trim()) { setError('Nama bisnis wajib diisi'); return }
-    if (!urlOk) { setError('Link Google Maps tidak valid'); return }
+
+    if (!selectedPlace) { setError('Pilih bisnis dari daftar pencarian'); return }
     if (!/^\d{4}$/.test(pin)) { setError('PIN harus 4 digit angka'); return }
 
     setSubmitting(true)
@@ -50,7 +94,12 @@ export default function ActivateForm({ code }: { code: string }) {
       const res = await fetch('/api/activate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, cafeName: cafeName.trim(), mapsUrl: mapsUrl.trim(), pin }),
+        body: JSON.stringify({
+          code,
+          cafeName: selectedPlace.name,
+          reviewUrl: selectedPlace.reviewUrl,
+          pin,
+        }),
       })
       const data = await res.json()
       if (res.ok) {
@@ -85,51 +134,75 @@ export default function ActivateForm({ code }: { code: string }) {
 
           <form onSubmit={handleSubmit} className="space-y-4">
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Nama Bisnis</label>
-              <input
-                type="text"
-                value={cafeName}
-                onChange={e => setCafeName(e.target.value)}
-                placeholder="cth: Kopi Kenangan Banyuwangi"
-                required
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-              />
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-sm font-medium text-gray-700">Link Google Maps</label>
-              </div>
-              <p className="text-xs text-gray-400 mb-2">
-                Buka Google Maps → cari bisnis → tap <strong>Bagikan</strong> → copy link
-              </p>
+            {/* Business Search */}
+            <div ref={wrapperRef} className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Cari Nama Bisnis
+              </label>
               <div className="relative">
                 <input
-                  type="url"
-                  value={mapsUrl}
-                  onChange={e => setMapsUrl(e.target.value)}
-                  placeholder="https://maps.app.goo.gl/..."
-                  required
+                  type="text"
+                  value={query}
+                  onChange={e => handleQueryChange(e.target.value)}
+                  onFocus={() => suggestions.length > 0 && setShowDropdown(true)}
+                  placeholder="Ketik nama bisnis atau alamat..."
+                  autoComplete="off"
                   className={`w-full px-4 py-3 rounded-xl border text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 text-sm pr-10 ${
-                    urlOk ? 'border-green-300 focus:ring-green-400' :
-                    urlBad ? 'border-red-300 focus:ring-red-400' :
-                    'border-gray-200 focus:ring-blue-500'
+                    selectedPlace
+                      ? 'border-green-300 focus:ring-green-400'
+                      : 'border-gray-200 focus:ring-blue-500'
                   }`}
                 />
-                {urlOk && (
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-green-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                <span className="absolute right-3 top-1/2 -translate-y-1/2">
+                  {searching ? (
+                    <svg className="w-4 h-4 animate-spin text-gray-400" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                  ) : selectedPlace ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-green-500">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
                     </svg>
-                  </span>
-                )}
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-gray-400">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                    </svg>
+                  )}
+                </span>
               </div>
-              {urlBad && <p className="mt-1 text-xs text-red-500">Harus link dari Google Maps</p>}
+
+              {/* Dropdown */}
+              {showDropdown && suggestions.length > 0 && (
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+                  {suggestions.map((place) => (
+                    <button
+                      key={place.placeId}
+                      type="button"
+                      onMouseDown={() => handleSelect(place)}
+                      className="w-full px-4 py-3 text-left hover:bg-blue-50 transition-colors border-b border-gray-50 last:border-0"
+                    >
+                      <p className="text-sm font-medium text-gray-900 truncate">{place.name}</p>
+                      <p className="text-xs text-gray-400 truncate mt-0.5">{place.address}</p>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
+            {/* Selected business info */}
+            {selectedPlace && (
+              <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 space-y-0.5">
+                <p className="text-xs font-semibold text-green-700">Bisnis dipilih</p>
+                <p className="text-sm text-green-800 font-medium">{selectedPlace.name}</p>
+                <p className="text-xs text-green-600">{selectedPlace.address}</p>
+              </div>
+            )}
+
+            {/* PIN */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Buat PIN (4 Digit)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Buat PIN (4 Digit)
+              </label>
               <div className="relative">
                 <input
                   type={showPin ? 'text' : 'password'}
@@ -150,8 +223,8 @@ export default function ActivateForm({ code }: { code: string }) {
 
             <button
               type="submit"
-              disabled={submitting || urlBad}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold py-3.5 px-4 rounded-xl transition-colors text-sm"
+              disabled={submitting || !selectedPlace}
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold py-3.5 px-4 rounded-xl transition-colors text-sm"
             >
               {submitting ? 'Mengaktifkan...' : 'Aktifkan Kartu'}
             </button>
