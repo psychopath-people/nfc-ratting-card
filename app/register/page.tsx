@@ -30,103 +30,136 @@ export default async function RegisterPage({
 
   return (
     <main className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 w-full max-w-md p-6 space-y-5">
+      <div className="w-full max-w-md space-y-4">
+
+        {/* Back nav */}
+        <a href="/" className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600">
+          ← Kembali
+        </a>
 
         {/* Header */}
-        <div>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
           <h1 className="text-xl font-bold text-gray-900">Daftarkan Kartu NFC</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Generate ID → Tulis ke tag → Setup lokasi bisnis.
+            Ikuti 3 langkah berikut untuk menyiapkan kartu.
           </p>
         </div>
 
-        {/* Error state */}
+        {/* Error */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+          <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
             <p className="text-sm font-semibold text-red-800 mb-1">❌ Gagal mendaftarkan kartu</p>
-            <p className="text-xs text-red-600">{decodeURIComponent(error)}</p>
-            <p className="text-xs text-red-500 mt-2">Cek env variables di Vercel (GOOGLE_SHEET_ID, GOOGLE_SERVICE_ACCOUNT_EMAIL, GOOGLE_PRIVATE_KEY)</p>
+            <p className="text-xs text-red-600 break-all">{decodeURIComponent(error)}</p>
+            <p className="text-xs text-red-400 mt-2">Cek env variables di Vercel (GOOGLE_SHEET_ID, GOOGLE_SERVICE_ACCOUNT_EMAIL, GOOGLE_PRIVATE_KEY)</p>
           </div>
         )}
 
-        {/* Hasil: card baru berhasil dibuat */}
-        {newId && nfcUrl && (
-          <div className="space-y-3">
-            {/* Card ID */}
+        {/* STEP 1 */}
+        <div className={`bg-white rounded-2xl shadow-sm border p-5 space-y-4 ${newId ? 'border-green-200' : 'border-gray-100'}`}>
+          <div className="flex items-center gap-3">
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${newId ? 'bg-green-500 text-white' : 'bg-blue-600 text-white'}`}>
+              {newId ? '✓' : '1'}
+            </div>
+            <div>
+              <p className="text-sm font-bold text-gray-900">Generate ID Kartu</p>
+              <p className="text-xs text-gray-500">Buat ID unik untuk kartu ini</p>
+            </div>
+          </div>
+
+          {newId ? (
             <div className="bg-gray-50 rounded-xl p-4">
-              <p className="text-xs text-gray-500 mb-1">Card ID</p>
-              <code className="text-2xl font-bold text-gray-900 tracking-widest">
-                {newId}
-              </code>
+              <p className="text-xs text-gray-500 mb-1">Card ID berhasil dibuat:</p>
+              <code className="text-3xl font-bold text-gray-900 tracking-widest">{newId}</code>
+              <p className="text-xs text-gray-400 mt-2 break-all font-mono">{nfcUrl}</p>
             </div>
+          ) : (
+            <form action={handleRegister}>
+              <button
+                type="submit"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl transition-colors text-sm"
+              >
+                ➕ Generate ID Sekarang
+              </button>
+            </form>
+          )}
+        </div>
 
-            {/* URL info */}
-            <div className="bg-gray-50 rounded-xl px-4 py-3">
-              <p className="text-xs text-gray-500 mb-1">URL yang akan ditulis ke tag</p>
-              <p className="text-xs font-mono text-gray-700 break-all">{nfcUrl}</p>
+        {/* STEP 2 */}
+        <div className={`bg-white rounded-2xl shadow-sm border p-5 space-y-4 ${!newId ? 'opacity-50 pointer-events-none' : 'border-gray-100'}`}>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
+              2
             </div>
-
-            {/* TULIS KE NFC — tombol utama */}
-            <WriteNFCButton url={nfcUrl} />
-
-            {/* Step berikutnya */}
-            <a
-              href={`/setup/${newId}`}
-              className="w-full flex items-center justify-center gap-2 border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-3 px-4 rounded-xl transition-colors text-sm"
-            >
-              ⚙️ Setup Lokasi Bisnis
-            </a>
-
-            <a
-              href={`/qr/${newId}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full flex items-center justify-center gap-2 border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium py-2.5 px-4 rounded-xl transition-colors text-sm"
-            >
-              🖨️ Print QR Code
-            </a>
-
-            <div className="border-t border-gray-100 pt-3">
-              <p className="text-xs text-gray-400 text-center">
-                Mau daftarkan kartu lain?
-              </p>
+            <div>
+              <p className="text-sm font-bold text-gray-900">Tulis ke Tag NFC</p>
+              <p className="text-xs text-gray-500">Tempel tag NFC ke belakang HP, lalu tap tombol di bawah</p>
             </div>
+          </div>
+
+          {nfcUrl && <WriteNFCButton url={nfcUrl} />}
+
+          <div className="bg-amber-50 border border-amber-100 rounded-xl p-3">
+            <p className="text-xs text-amber-800 font-semibold mb-1">⚠️ Syarat tulis NFC:</p>
+            <ul className="text-xs text-amber-700 space-y-0.5 list-disc list-inside">
+              <li>HP Android (bukan iPhone)</li>
+              <li>Browser Chrome (bukan aplikasi lain)</li>
+              <li>Tag NFC harus kosong / bisa ditulis ulang</li>
+            </ul>
+          </div>
+        </div>
+
+        {/* STEP 3 */}
+        <div className={`bg-white rounded-2xl shadow-sm border p-5 space-y-4 ${!newId ? 'opacity-50 pointer-events-none' : 'border-gray-100'}`}>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
+              3
+            </div>
+            <div>
+              <p className="text-sm font-bold text-gray-900">Setup Lokasi Bisnis</p>
+              <p className="text-xs text-gray-500">Masukkan nama cafe dan link Google Maps-nya</p>
+            </div>
+          </div>
+
+          {newId && (
+            <div className="space-y-2">
+              <a
+                href={`/setup/${newId}`}
+                className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-xl transition-colors text-sm"
+              >
+                ⚙️ Setup Lokasi Sekarang →
+              </a>
+              <a
+                href={`/qr/${newId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-center gap-2 border border-gray-200 text-gray-500 hover:bg-gray-50 font-medium py-2.5 px-4 rounded-xl transition-colors text-xs"
+              >
+                🖨️ Print QR Code Dulu
+              </a>
+            </div>
+          )}
+        </div>
+
+        {/* Generate lagi */}
+        {newId && (
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+            <p className="text-xs text-gray-400 text-center mb-3">Mau daftarkan kartu lain?</p>
+            <form action={handleRegister}>
+              <button
+                type="submit"
+                className="w-full border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium py-2.5 px-4 rounded-xl transition-colors text-sm"
+              >
+                ➕ Generate Kartu Baru Lagi
+              </button>
+            </form>
           </div>
         )}
 
-        {/* Tombol generate */}
-        <form action={handleRegister}>
-          <button
-            type="submit"
-            className="w-full bg-gray-900 hover:bg-gray-700 text-white font-semibold py-3 px-4 rounded-xl transition-colors text-sm"
-          >
-            {newId ? '➕ Generate Kartu Baru Lagi' : '➕ Generate & Daftarkan Kartu'}
-          </button>
-        </form>
-
-        {/* Cara pakai */}
-        {!newId && (
-          <div className="bg-blue-50 rounded-xl p-4 space-y-2">
-            <p className="text-xs font-semibold text-blue-800">Cara pakai:</p>
-            <ol className="text-xs text-blue-700 space-y-1.5 list-decimal list-inside">
-              <li>Klik Generate → dapat Card ID & URL</li>
-              <li>Tap <strong>&quot;Tulis ke NFC Tag&quot;</strong> → tempel tag ke HP</li>
-              <li>Tap <strong>&quot;Setup Lokasi Bisnis&quot;</strong> → isi nama cafe + Maps URL</li>
-              <li>Kartu siap kasih ke cafe! 🎉</li>
-            </ol>
-            <p className="text-[11px] text-blue-500 mt-1">
-              * Fitur tulis NFC butuh Chrome di Android
-            </p>
-          </div>
-        )}
-
-        {/* Link ke daftar kartu */}
-        <div className="text-center">
+        <div className="text-center pb-4">
           <a href="/kartu" className="text-xs text-gray-400 hover:text-gray-600 underline">
             Lihat semua kartu terdaftar →
           </a>
         </div>
-
       </div>
     </main>
   )

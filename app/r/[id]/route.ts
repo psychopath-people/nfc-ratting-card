@@ -9,12 +9,11 @@ export async function GET(
   const { id } = await params
   const card = await findCard(id)
 
-  if (!card || !card.mapsUrl) {
-    redirect('/not-configured')
+  if (!card || card.status !== 'active' || !card.reviewUrl) {
+    redirect(`/activate/${id}`)
   }
 
-  // fire-and-forget tap count increment
   incrementTapCount(card.rowNumber, card.tapCount).catch(() => {})
 
-  redirect(card.mapsUrl)
+  redirect(card.reviewUrl)
 }
