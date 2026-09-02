@@ -5,102 +5,76 @@ import { useRouter } from 'next/navigation'
 
 type ScanState = 'idle' | 'scanning' | 'found' | 'error'
 
-function extractCode(url: string): string | null {
+function extractCode(text: string): string | null {
+  // Try as URL first
   try {
-    const u = new URL(url)
+    const u = new URL(text)
     const m = u.pathname.match(/\/(?:c|r|activate)\/([A-Z0-9]+)/i)
-    return m ? m[1].toUpperCase() : null
-  } catch {
-    return null
-  }
+    if (m) return m[1].toUpperCase()
+  } catch { /* not a URL */ }
+  // Try as raw code (6-8 alphanumeric uppercase)
+  const raw = text.trim().toUpperCase()
+  if (/^[A-Z0-9]{4,8}$/.test(raw)) return raw
+  return null
 }
 
 export default function QRScanner() {
-  const videoRef = useRef<HTMLVideoElement>(null)
   const [state, setState] = useState<ScanState>('idle')
   const [code, setCode] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
   const router = useRouter()
-  const streamRef = useRef<MediaStream | null>(null)
-  const animRef = useRef<number>(0)
-
-  function stopCamera() {
-    if (animRef.current) cancelAnimationFrame(animRef.current)
-    streamRef.current?.getTracks().forEach(t => t.stop())
-    streamRef.current = null
-  }
+  const scannerRef = useRef<{ clear: () => Promise<void> } | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   async function startScan() {
     setErrorMsg('')
     setState('scanning')
+
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-      streamRef.current = stream
-      const video = videoRef.current!
-      video.srcObject = stream
-      await video.play()
+      const { Html5Qrcode } = await import('html5-qrcode')
+      const scanner = new Html5Qrcode('qr-reader')
+      scannerRef.current = scanner
 
-      const BD = (window as typeof window & { BarcodeDetector?: unknown }).BarcodeDetector
-      if (!BD) {
-        stopCamera()
-        setState('error')
-        setErrorMsg('Browser tidak mendukung scan otomatis. Masukkan kode kartu manual.')
-        return
-      }
-
-      // @ts-expect-error BarcodeDetector not in TS types yet
-      const detector = new window.BarcodeDetector({ formats: ['qr_code'] })
-
-      async function detect() {
-        if (!videoRef.current || videoRef.current.readyState < 2) {
-          animRef.current = requestAnimationFrame(detect)
-          return
-        }
-        try {
-          const results = await detector.detect(videoRef.current)
-          if (results.length > 0) {
-            const extracted = extractCode(results[0].rawValue as string)
-            if (extracted) {
-              stopCamera()
-              setCode(extracted)
-              setState('found')
-            } else {
-              animRef.current = requestAnimationFrame(detect)
-            }
-          } else {
-            animRef.current = requestAnimationFrame(detect)
+      await scanner.start(
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: { width: 220, height: 220 } },
+        (decodedText) => {
+          const extracted = extractCode(decodedText)
+          if (extracted) {
+            scanner.stop().catch(() => {})
+            scannerRef.current = null
+            setCode(extracted)
+            setState('found')
           }
-        } catch {
-          animRef.current = requestAnimationFrame(detect)
-        }
-      }
-      detect()
+        },
+        () => { /* scan attempt, ignore */ }
+      )
     } catch {
       setState('error')
       setErrorMsg('Tidak bisa mengakses kamera. Pastikan izin kamera sudah diberikan.')
     }
   }
 
-  useEffect(() => () => stopCamera(), [])
+  async function stopScan() {
+    try { await scannerRef.current?.clear() } catch { /* ignore */ }
+    scannerRef.current = null
+    setState('idle')
+  }
 
-  // Scanning state — fullscreen camera
+  useEffect(() => () => { scannerRef.current?.clear().catch(() => {}) }, [])
+
   if (state === 'scanning') {
     return (
       <div className="space-y-3">
-        <div className="relative rounded-2xl overflow-hidden bg-black" style={{ aspectRatio: '1' }}>
-          <video ref={videoRef} className="w-full h-full object-cover" playsInline muted />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-48 h-48 relative">
-              <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-white rounded-tl-lg" />
-              <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-white rounded-tr-lg" />
-              <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-white rounded-bl-lg" />
-              <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-white rounded-br-lg" />
-            </div>
-          </div>
-        </div>
+        <div
+          id="qr-reader"
+          ref={containerRef}
+          className="rounded-2xl overflow-hidden w-full"
+          style={{ minHeight: 280 }}
+        />
         <p className="text-xs text-center text-gray-400">Arahkan QR code pada kartu ke dalam kotak</p>
         <button
-          onClick={() => { stopCamera(); setState('idle') }}
+          onClick={stopScan}
           className="w-full border border-gray-200 text-gray-600 hover:bg-gray-50 font-semibold py-3.5 rounded-2xl text-sm transition-all"
         >
           Batal
@@ -109,7 +83,6 @@ export default function QRScanner() {
     )
   }
 
-  // Found state — show options
   if (state === 'found') {
     return (
       <div className="space-y-4">
@@ -140,7 +113,6 @@ export default function QRScanner() {
     )
   }
 
-  // Idle / error state
   return (
     <div className="space-y-4">
       {errorMsg && (

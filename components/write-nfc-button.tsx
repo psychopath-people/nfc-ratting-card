@@ -25,11 +25,21 @@ export function WriteNFCButton({ url }: { url: string }) {
   }
 
   if (status === 'unsupported') {
+    const isIOS = typeof navigator !== 'undefined' && /iphone|ipad|ipod/i.test(navigator.userAgent)
     return (
-      <div className="border border-gray-200 rounded-xl p-4 space-y-2">
-        <p className="text-xs font-semibold text-gray-700">Web NFC tidak didukung di browser ini</p>
-        <p className="text-xs text-gray-500">Gunakan Chrome di Android. URL yang harus ditulis manual:</p>
-        <p className="text-xs font-mono text-gray-600 bg-gray-50 rounded-lg px-3 py-2 break-all">{url}</p>
+      <div className="border border-orange-200 bg-orange-50 rounded-xl p-4 space-y-2">
+        <p className="text-xs font-semibold text-orange-800">
+          {isIOS ? 'iPhone tidak bisa menulis NFC via browser' : 'Web NFC tidak didukung di browser ini'}
+        </p>
+        <p className="text-xs text-orange-700">
+          {isIOS
+            ? 'Tulis chip NFC harus menggunakan Android + Chrome. Minta reseller atau tim kamu untuk melakukannya.'
+            : 'Gunakan Chrome di Android untuk menulis chip NFC.'}
+        </p>
+        <div className="bg-white rounded-lg px-3 py-2 space-y-1">
+          <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide">URL yang perlu ditulis ke chip:</p>
+          <p className="text-xs font-mono text-gray-600 break-all">{url}</p>
+        </div>
       </div>
     )
   }
