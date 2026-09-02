@@ -78,12 +78,11 @@ export default async function KartuPage() {
                       ⚙️ {card.status === 'active' ? 'Edit' : 'Setup'}
                     </a>
                     <a
-                      href={`/qr/${card.cardId}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      href={`/api/card-image/${card.cardId}`}
+                      download={`review-card-${card.cardId}.png`}
                       className="text-xs font-medium text-gray-500 hover:text-gray-700 px-3 py-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 whitespace-nowrap transition-colors"
                     >
-                      🖨️ QR
+                      ⬇️ Design
                     </a>
                   </div>
                 </div>

@@ -62,7 +62,14 @@ export default async function QRPage({
             <h1 className="text-lg font-bold text-gray-900">Preview Kartu Print</h1>
             <p className="text-xs text-gray-500 mt-1">2 kartu per halaman A4 · Siap potong</p>
           </div>
-          <div className="flex justify-center gap-3">
+          <div className="flex justify-center gap-3 flex-wrap">
+            <a
+              href={`/api/card-image/${id}`}
+              download={`review-card-${id}.png`}
+              className="inline-flex items-center gap-2 bg-gray-900 hover:bg-gray-700 text-white text-sm font-semibold py-3 px-5 rounded-xl transition-colors"
+            >
+              ⬇️ Download Design Akrilik
+            </a>
             <PrintButton />
             <a
               href={`/setup/${id}`}
