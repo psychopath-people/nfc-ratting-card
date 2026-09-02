@@ -76,9 +76,12 @@ export default function SetupForm({ code, cafeName }: { code: string; cafeName: 
             >
               Coba Buka Halaman Review
             </a>
-            <p className="text-xs text-gray-400">
-              Link bisa diubah kapan saja lewat halaman edit kartu menggunakan PIN.
-            </p>
+            <a
+              href={`/edit/${code}`}
+              className="flex items-center justify-center gap-2 w-full border border-gray-200 text-gray-600 hover:bg-gray-50 font-semibold py-3.5 rounded-2xl text-sm transition-all"
+            >
+              Edit / Ganti Link Maps
+            </a>
           </div>
         </div>
       </main>
