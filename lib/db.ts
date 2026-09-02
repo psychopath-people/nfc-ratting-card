@@ -7,7 +7,6 @@ export type Card = {
   cardId: string
   cafeName: string
   reviewUrl: string
-  tapCount: number
   status: CardStatus
   createdAt: string
   updatedAt: string
@@ -21,7 +20,6 @@ function rowToCard(row: Record<string, unknown>): Card {
     cardId: row.id as string,
     cafeName: (row.cafe_name as string) || '',
     reviewUrl: (row.review_url as string) || '',
-    tapCount: (row.tap_count as number) || 0,
     status: rawStatus === 'active' ? 'active' : 'inactive',
     createdAt: (row.created_at as string) || '',
     updatedAt: (row.updated_at as string) || '',
@@ -68,7 +66,6 @@ export async function registerCard(): Promise<string> {
     id: cardId,
     cafe_name: '',
     review_url: '',
-    tap_count: 0,
     status: 'inactive',
     pin_hash: '',
   })
@@ -124,7 +121,6 @@ export async function resetCard(cardId: string) {
     .update({
       cafe_name: '',
       review_url: '',
-      tap_count: 0,
       status: 'inactive',
       pin_hash: '',
       updated_at: new Date().toISOString(),
@@ -132,20 +128,6 @@ export async function resetCard(cardId: string) {
     .eq('id', cardId)
 
   if (error) throw new Error(error.message)
-}
-
-export async function incrementTapCount(cardId: string) {
-  const { error } = await supabase.rpc('increment_tap_count', { card_id: cardId })
-  if (error) {
-    // fallback: manual increment
-    const card = await findCard(cardId)
-    if (card) {
-      await supabase
-        .from('cards')
-        .update({ tap_count: card.tapCount + 1 })
-        .eq('id', cardId)
-    }
-  }
 }
 
 export async function setupCard(cardId: string, cafeName: string, mapsUrl: string) {

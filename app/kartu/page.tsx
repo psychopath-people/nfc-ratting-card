@@ -68,9 +68,6 @@ export default async function KartuPage() {
                     ) : (
                       <p className="text-xs text-gray-400 italic">Belum diisi nama bisnis</p>
                     )}
-                    {card.status === 'active' && (
-                      <p className="text-xs text-gray-400 mt-0.5">{card.tapCount} tap oleh pelanggan</p>
-                    )}
                   </div>
 
                   <div className="flex flex-col gap-1.5 flex-shrink-0 items-end">

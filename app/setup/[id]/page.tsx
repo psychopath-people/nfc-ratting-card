@@ -73,11 +73,6 @@ export default async function SetupPage({
           <h1 className="text-xl font-bold text-gray-900">
             {isActive ? `Edit: ${card.cafeName}` : 'Setup Lokasi Bisnis'}
           </h1>
-          {isActive && (
-            <p className="text-sm text-gray-500 mt-1">
-              Sudah ditap <strong>{card.tapCount}x</strong> oleh pelanggan
-            </p>
-          )}
         </div>
 
         {/* Success banner */}

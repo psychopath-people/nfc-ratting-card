@@ -1,4 +1,4 @@
-import { findCard, incrementTapCount } from '@/lib/db'
+import { findCard } from '@/lib/db'
 import { redirect } from 'next/navigation'
 import { NextRequest } from 'next/server'
 
@@ -16,8 +16,6 @@ export async function GET(
   if (!card.reviewUrl) {
     redirect(`/edit/${id}`)
   }
-
-  incrementTapCount(card.cardId).catch(() => {})
 
   redirect(card.reviewUrl)
 }
