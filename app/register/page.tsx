@@ -1,4 +1,5 @@
 import { registerCard } from '@/lib/sheets'
+import { generateQRDataURL } from '@/lib/qr'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { WriteNFCButton } from '@/components/write-nfc-button'
@@ -27,139 +28,140 @@ export default async function RegisterPage({
   }
 
   const nfcUrl = newId ? `${protocol}://${host}/r/${newId}` : null
+  const activateUrl = newId ? `${protocol}://${host}/activate/${newId}` : null
+  const qrDataUrl = activateUrl ? await generateQRDataURL(activateUrl) : null
+
+  const steps = [
+    { n: 1, done: !!newId, title: 'Generate ID Kartu', desc: 'Buat ID unik untuk kartu ini' },
+    { n: 2, done: false, title: 'Tulis ke Chip NFC', desc: 'Tempelkan HP ke chip NFC' },
+    { n: 3, done: false, title: 'Print QR Aktivasi', desc: 'Pemilik bisnis scan QR untuk aktivasi' },
+  ]
 
   return (
-    <main className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-4">
+    <main className="min-h-screen bg-white flex items-center justify-center p-4">
+      <div className="w-full max-w-sm space-y-4">
 
-        {/* Back nav */}
-        <a href="/" className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600">
-          ← Kembali
-        </a>
-
-        {/* Header */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-          <h1 className="text-xl font-bold text-gray-900">Daftarkan Kartu NFC</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Ikuti 3 langkah berikut untuk menyiapkan kartu.
-          </p>
+        <div className="pt-2">
+          <h1 className="text-2xl font-semibold text-gray-900">Daftarkan Kartu</h1>
+          <p className="text-sm text-gray-500 mt-1">Ikuti 3 langkah untuk menyiapkan kartu NFC.</p>
         </div>
 
-        {/* Error */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
-            <p className="text-sm font-semibold text-red-800 mb-1">❌ Gagal mendaftarkan kartu</p>
-            <p className="text-xs text-red-600 break-all">{decodeURIComponent(error)}</p>
-            <p className="text-xs text-red-400 mt-2">Cek env variables di Vercel (GOOGLE_SHEET_ID, GOOGLE_SERVICE_ACCOUNT_EMAIL, GOOGLE_PRIVATE_KEY)</p>
+          <div className="border border-red-200 bg-red-50 rounded-xl px-4 py-3">
+            <p className="text-sm font-semibold text-red-700 mb-1">Gagal mendaftarkan kartu</p>
+            <p className="text-xs text-red-500 break-all">{decodeURIComponent(error)}</p>
           </div>
         )}
 
-        {/* STEP 1 */}
-        <div className={`bg-white rounded-2xl shadow-sm border p-5 space-y-4 ${newId ? 'border-green-200' : 'border-gray-100'}`}>
+        {/* Step 1 — Generate ID */}
+        <div className={`border rounded-2xl p-5 space-y-4 ${newId ? 'border-gray-900' : 'border-gray-200'}`}>
           <div className="flex items-center gap-3">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${newId ? 'bg-green-500 text-white' : 'bg-blue-600 text-white'}`}>
-              {newId ? '✓' : '1'}
+            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${newId ? 'bg-gray-900 text-white' : 'border border-gray-300 text-gray-500'}`}>
+              {newId ? (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                  <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+                </svg>
+              ) : '1'}
             </div>
             <div>
-              <p className="text-sm font-bold text-gray-900">Generate ID Kartu</p>
+              <p className="text-sm font-semibold text-gray-900">Generate ID Kartu</p>
               <p className="text-xs text-gray-500">Buat ID unik untuk kartu ini</p>
             </div>
           </div>
 
           {newId ? (
             <div className="bg-gray-50 rounded-xl p-4">
-              <p className="text-xs text-gray-500 mb-1">Card ID berhasil dibuat:</p>
+              <p className="text-xs text-gray-400 mb-1">ID kartu berhasil dibuat</p>
               <code className="text-3xl font-bold text-gray-900 tracking-widest">{newId}</code>
-              <p className="text-xs text-gray-400 mt-2 break-all font-mono">{nfcUrl}</p>
+              <p className="text-xs text-gray-400 mt-2 font-mono break-all">{nfcUrl}</p>
             </div>
           ) : (
             <form action={handleRegister}>
               <button
                 type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl transition-colors text-sm"
+                className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3 px-4 rounded-xl text-sm transition-colors"
               >
-                ➕ Generate ID Sekarang
+                Generate ID Sekarang
               </button>
             </form>
           )}
         </div>
 
-        {/* STEP 2 */}
-        <div className={`bg-white rounded-2xl shadow-sm border p-5 space-y-4 ${!newId ? 'opacity-50 pointer-events-none' : 'border-gray-100'}`}>
+        {/* Step 2 — Tulis NFC */}
+        <div className={`border border-gray-200 rounded-2xl p-5 space-y-4 ${!newId ? 'opacity-40 pointer-events-none' : ''}`}>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
+            <div className="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center text-xs font-semibold text-gray-500 flex-shrink-0">
               2
             </div>
             <div>
-              <p className="text-sm font-bold text-gray-900">Tulis ke Tag NFC</p>
-              <p className="text-xs text-gray-500">Tempel tag NFC ke belakang HP, lalu tap tombol di bawah</p>
+              <p className="text-sm font-semibold text-gray-900">Tulis ke Chip NFC</p>
+              <p className="text-xs text-gray-500">Tempelkan HP ke chip, lalu tap tombol di bawah</p>
             </div>
           </div>
 
           {nfcUrl && <WriteNFCButton url={nfcUrl} />}
 
-          <div className="bg-amber-50 border border-amber-100 rounded-xl p-3">
-            <p className="text-xs text-amber-800 font-semibold mb-1">⚠️ Syarat tulis NFC:</p>
-            <ul className="text-xs text-amber-700 space-y-0.5 list-disc list-inside">
-              <li>HP Android (bukan iPhone)</li>
-              <li>Browser Chrome (bukan aplikasi lain)</li>
-              <li>Tag NFC harus kosong / bisa ditulis ulang</li>
+          <div className="border border-gray-100 rounded-xl p-3">
+            <p className="text-xs font-medium text-gray-600 mb-1">Syarat tulis NFC:</p>
+            <ul className="text-xs text-gray-400 space-y-0.5 list-disc list-inside">
+              <li>HP Android, bukan iPhone</li>
+              <li>Browser Chrome</li>
+              <li>Tag NFC kosong atau bisa ditulis ulang</li>
             </ul>
           </div>
         </div>
 
-        {/* STEP 3 */}
-        <div className={`bg-white rounded-2xl shadow-sm border p-5 space-y-4 ${!newId ? 'opacity-50 pointer-events-none' : 'border-gray-100'}`}>
+        {/* Step 3 — Print QR */}
+        <div className={`border border-gray-200 rounded-2xl p-5 space-y-4 ${!newId ? 'opacity-40 pointer-events-none' : ''}`}>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
+            <div className="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center text-xs font-semibold text-gray-500 flex-shrink-0">
               3
             </div>
             <div>
-              <p className="text-sm font-bold text-gray-900">Setup Lokasi Bisnis</p>
-              <p className="text-xs text-gray-500">Masukkan nama cafe dan link Google Maps-nya</p>
+              <p className="text-sm font-semibold text-gray-900">Print QR Aktivasi</p>
+              <p className="text-xs text-gray-500">Pemilik bisnis scan QR ini untuk aktivasi kartu</p>
             </div>
           </div>
 
-          {newId && (
-            <div className="space-y-2">
-              <a
-                href={`/setup/${newId}`}
-                className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-xl transition-colors text-sm"
+          {qrDataUrl && activateUrl && (
+            <div className="space-y-3">
+              <div className="flex justify-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={qrDataUrl}
+                  alt="QR Aktivasi"
+                  style={{ width: 160, height: 160, borderRadius: 8, border: '1px solid #e5e7eb', padding: 8, background: 'white' }}
+                />
+              </div>
+              <p className="text-xs text-center text-gray-400 font-mono break-all">{activateUrl}</p>
+              <button
+                onClick={() => window.print()}
+                className="w-full border border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white font-semibold py-3 px-4 rounded-xl text-sm transition-colors"
               >
-                ⚙️ Setup Lokasi Sekarang →
-              </a>
-              <a
-                href={`/qr/${newId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full flex items-center justify-center gap-2 border border-gray-200 text-gray-500 hover:bg-gray-50 font-medium py-2.5 px-4 rounded-xl transition-colors text-xs"
-              >
-                🖨️ Print QR Code Dulu
-              </a>
+                Print QR Code
+              </button>
             </div>
           )}
         </div>
 
         {/* Generate lagi */}
         {newId && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-            <p className="text-xs text-gray-400 text-center mb-3">Mau daftarkan kartu lain?</p>
-            <form action={handleRegister}>
-              <button
-                type="submit"
-                className="w-full border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium py-2.5 px-4 rounded-xl transition-colors text-sm"
-              >
-                ➕ Generate Kartu Baru Lagi
-              </button>
-            </form>
-          </div>
+          <form action={handleRegister}>
+            <button
+              type="submit"
+              className="w-full border border-gray-200 text-gray-500 hover:bg-gray-50 font-medium py-2.5 px-4 rounded-xl text-sm transition-colors"
+            >
+              Daftarkan Kartu Lain
+            </button>
+          </form>
         )}
 
-        <div className="text-center pb-4">
-          <a href="/kartu" className="text-xs text-gray-400 hover:text-gray-600 underline">
-            Lihat semua kartu terdaftar →
+        <div className="pb-4">
+          <a href="/kartu" className="text-xs text-gray-400 hover:text-gray-600 hover:underline">
+            Lihat semua kartu terdaftar
           </a>
         </div>
+
       </div>
     </main>
   )
