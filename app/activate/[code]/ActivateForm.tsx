@@ -42,7 +42,7 @@ export default function ActivateForm({ code }: { code: string }) {
       })
       const data = await res.json()
       if (res.ok) {
-        router.push(`/edit/${code}`)
+        router.push(`/setup/${code}`)
       } else {
         setError(data.error || 'Gagal mengaktifkan kartu')
       }
