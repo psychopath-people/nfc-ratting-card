@@ -10,7 +10,7 @@ export async function GET(
   const card = await findCard(id)
 
   if (!card || card.status !== 'active') {
-    redirect(`/activate/${id}`)
+    redirect(`/c/${id}`)
   }
 
   if (!card.reviewUrl) {

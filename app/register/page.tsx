@@ -29,8 +29,8 @@ export default async function RegisterPage({
   }
 
   const nfcUrl = newId ? `${protocol}://${host}/r/${newId}` : null
-  const activateUrl = newId ? `${protocol}://${host}/activate/${newId}` : null
-  const qrDataUrl = activateUrl ? await generateQRDataURL(activateUrl) : null
+  const cardUrl = newId ? `${protocol}://${host}/c/${newId}` : null
+  const qrDataUrl = cardUrl ? await generateQRDataURL(cardUrl) : null
 
   const steps = [
     { n: 1, done: !!newId, title: 'Generate ID Kartu', desc: 'Buat ID unik untuk kartu ini' },
@@ -124,7 +124,7 @@ export default async function RegisterPage({
             </div>
           </div>
 
-          {qrDataUrl && activateUrl && (
+          {qrDataUrl && (
             <div className="space-y-3">
               <div className="flex justify-center">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -134,7 +134,6 @@ export default async function RegisterPage({
                   style={{ width: 160, height: 160, borderRadius: 8, border: '1px solid #e5e7eb', padding: 8, background: 'white' }}
                 />
               </div>
-              <p className="text-xs text-center text-gray-400 font-mono break-all">{activateUrl}</p>
               <PrintButton />
             </div>
           )}
