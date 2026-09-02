@@ -12,22 +12,20 @@ export default async function ActivatePage({
 
   if (!card) {
     return (
-      <main className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="w-full max-w-sm">
-          <div className="bg-white rounded-2xl shadow-sm p-6 text-center space-y-4">
-            <div className="text-4xl">🚫</div>
-            <h1 className="text-lg font-bold text-gray-900">Kartu Tidak Ditemukan</h1>
-            <p className="text-sm text-gray-500">
-              Kode <code className="bg-gray-100 px-2 py-0.5 rounded font-mono">{code}</code> tidak ada di sistem.
-            </p>
-          </div>
+      <main className="min-h-screen flex items-center justify-center p-4" style={{ background: '#eef2f7' }}>
+        <div className="w-full max-w-sm bg-white rounded-3xl shadow-sm p-7 text-center space-y-3">
+          <p className="text-base font-semibold text-gray-900">Kartu Tidak Ditemukan</p>
+          <p className="text-sm text-gray-500">
+            Kode <code className="bg-gray-100 px-2 py-0.5 rounded font-mono text-xs">{code}</code> tidak ada di sistem.
+          </p>
         </div>
       </main>
     )
   }
 
   if (card.status === 'active') {
-    redirect(`/activated/${code}`)
+    if (card.reviewUrl) redirect(card.reviewUrl)
+    else redirect(`/edit/${code}`)
   }
 
   return <ActivateForm code={code} />

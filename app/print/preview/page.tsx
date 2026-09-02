@@ -6,7 +6,8 @@ import NfcWriteButton from './NfcWriteButton'
 interface CardItem {
   id: string
   qrDataUrl: string
-  url: string
+  nfcUrl: string
+  activateUrl: string
 }
 
 export default async function PrintPreviewPage({
@@ -35,9 +36,10 @@ export default async function PrintPreviewPage({
 
   const cards: CardItem[] = await Promise.all(
     cardIds.map(async (id) => {
-      const url = `${protocol}://${host}/r/${id}`
-      const qrDataUrl = await generateQRDataURL(url)
-      return { id, qrDataUrl, url }
+      const nfcUrl = `${protocol}://${host}/r/${id}`
+      const activateUrl = `${protocol}://${host}/activate/${id}`
+      const qrDataUrl = await generateQRDataURL(activateUrl)
+      return { id, qrDataUrl, nfcUrl, activateUrl }
     })
   )
 
@@ -75,7 +77,7 @@ export default async function PrintPreviewPage({
 
       <div className="print-page bg-gray-100 min-h-screen p-6">
         <div className="card-grid">
-          {cards.map(({ id, qrDataUrl, url }) => (
+          {cards.map(({ id, qrDataUrl, nfcUrl, activateUrl }) => (
             <div key={id} className="nfc-card bg-white rounded-xl overflow-hidden border border-gray-200">
 
               {/* Header */}
@@ -170,13 +172,13 @@ export default async function PrintPreviewPage({
                   {id}
                 </p>
                 <p style={{ fontSize: '7px', color: '#d1d5db', margin: 0, maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {url}
+                  {activateUrl}
                 </p>
               </div>
 
               {/* NFC button — screen only */}
               <div className="no-print px-3 pb-3 pt-1">
-                <NfcWriteButton url={url} />
+                <NfcWriteButton url={nfcUrl} />
               </div>
 
             </div>
