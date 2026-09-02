@@ -133,11 +133,10 @@ export default function EditPage() {
 
         <div className="bg-white rounded-3xl shadow-sm p-7 space-y-5">
 
-          <div className="space-y-1.5">
-            <h1 className="text-2xl font-bold text-gray-900">Edit Kartu</h1>
-            <p className="text-sm text-gray-500 leading-relaxed">
-              Kode kartu: <strong className="text-gray-800">{code}</strong>. Masukkan PIN saat ini untuk mengubah link Google Review atau PIN.
-            </p>
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Edit Kartu</p>
+            <code className="text-4xl font-bold text-gray-900 tracking-widest block">{code}</code>
+            <p className="text-sm text-gray-500">Masukkan PIN untuk mengubah info bisnis atau link Google Review.</p>
           </div>
 
           {error && (
@@ -165,7 +164,14 @@ export default function EditPage() {
                   <EyeIcon open={showCurrentPin} />
                 </button>
               </div>
-              <p className="mt-1.5 text-xs text-blue-500">Lupa PIN? Hubungi Admin</p>
+              <a
+                href={`https://wa.me/6282231277648?text=Halo%2C+saya+lupa+PIN+kartu+NFC+saya.+Kode+kartu%3A+${code}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-1.5 text-xs text-blue-500 hover:text-blue-700 inline-block"
+              >
+                Lupa PIN? Hubungi via WhatsApp
+              </a>
             </div>
 
             <div>
