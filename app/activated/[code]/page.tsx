@@ -1,4 +1,5 @@
 import { findCard } from '@/lib/sheets'
+import { generateEditToken } from '@/lib/editToken'
 import { redirect } from 'next/navigation'
 
 export default async function ActivatedPage({
@@ -8,6 +9,7 @@ export default async function ActivatedPage({
 }) {
   const { code } = await params
   const card = await findCard(code).catch(() => null)
+  const editUrl = `/edit/${code}/${generateEditToken(code)}`
 
   if (!card || card.status !== 'active') {
     redirect(`/activate/${code}`)
@@ -43,7 +45,7 @@ export default async function ActivatedPage({
               Buka Halaman Review
             </a>
             <a
-              href={`/edit/${code}`}
+              href={editUrl}
               className="block w-full text-center border border-gray-200 text-gray-700 hover:bg-gray-50 font-medium py-3 px-4 rounded-lg transition-colors text-sm"
             >
               Edit Info Kartu
@@ -52,7 +54,7 @@ export default async function ActivatedPage({
         ) : (
           <div className="space-y-3 mb-6">
             <a
-              href={`/edit/${code}`}
+              href={editUrl}
               className="block w-full text-center bg-gray-900 hover:bg-gray-800 text-white font-medium py-3 px-4 rounded-lg transition-colors text-sm"
             >
               Hubungkan ke Google Maps

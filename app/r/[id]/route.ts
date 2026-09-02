@@ -1,4 +1,5 @@
 import { findCard, incrementTapCount } from '@/lib/sheets'
+import { generateEditToken } from '@/lib/editToken'
 import { redirect } from 'next/navigation'
 import { NextRequest } from 'next/server'
 
@@ -14,7 +15,7 @@ export async function GET(
   }
 
   if (!card.reviewUrl) {
-    redirect(`/edit/${id}`)
+    redirect(`/edit/${id}/${generateEditToken(id)}`)
   }
 
   incrementTapCount(card.rowNumber, card.tapCount).catch(() => {})
