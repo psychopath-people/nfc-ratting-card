@@ -71,31 +71,39 @@ export default async function KartuPage() {
                   </div>
 
                   <div className="flex flex-col gap-1.5 flex-shrink-0 items-end">
-                    <a
-                      href={`/setup/${card.cardId}`}
-                      className="text-xs font-semibold bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors"
-                    >
-                      ⚙️ {card.status === 'active' ? 'Edit' : 'Setup'}
-                    </a>
-                    <a
-                      href={`/api/card-image/${card.cardId}`}
-                      download={`review-card-${card.cardId}.png`}
-                      className="text-xs font-medium text-gray-500 hover:text-gray-700 px-3 py-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 whitespace-nowrap transition-colors"
-                    >
-                      ⬇️ Design
-                    </a>
+                    {card.status === 'active' ? (
+                      <>
+                        <a
+                          href={`/edit/${card.cardId}`}
+                          className="text-xs font-semibold bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors"
+                        >
+                          ⚙️ Edit
+                        </a>
+                        <a
+                          href={`/api/card-image/${card.cardId}`}
+                          download={`review-card-${card.cardId}.png`}
+                          className="text-xs font-medium text-gray-500 hover:text-gray-700 px-3 py-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 whitespace-nowrap transition-colors"
+                        >
+                          ⬇️ Design
+                        </a>
+                      </>
+                    ) : (
+                      <a
+                        href={`/c/${card.cardId}`}
+                        className="text-xs font-semibold bg-orange-50 text-orange-600 hover:bg-orange-100 px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors"
+                      >
+                        🔗 Link Aktivasi
+                      </a>
+                    )}
                   </div>
                 </div>
 
                 {/* Incomplete prompt */}
                 {card.status === 'inactive' && (
                   <div className="mt-3 pt-3 border-t border-gray-50">
-                    <a
-                      href={`/setup/${card.cardId}`}
-                      className="text-xs text-orange-600 font-medium hover:underline"
-                    >
-                      → Selesaikan setup: masukkan nama bisnis & link Google Maps
-                    </a>
+                    <p className="text-xs text-orange-600 font-medium">
+                      → Bagikan link aktivasi ke pemilik bisnis
+                    </p>
                   </div>
                 )}
               </div>

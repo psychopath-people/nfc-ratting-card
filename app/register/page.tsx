@@ -112,29 +112,33 @@ export default async function RegisterPage({
           </div>
         </div>
 
-        {/* Step 3 — Print QR */}
+        {/* Step 3 — Download Design */}
         <div className={`border border-gray-200 rounded-2xl p-5 space-y-4 ${!newId ? 'opacity-40 pointer-events-none' : ''}`}>
           <div className="flex items-center gap-3">
             <div className="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center text-xs font-semibold text-gray-500 flex-shrink-0">
               3
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-900">Print QR Aktivasi</p>
-              <p className="text-xs text-gray-500">Pemilik bisnis scan QR ini untuk aktivasi kartu</p>
+              <p className="text-sm font-semibold text-gray-900">Download Design Akrilik</p>
+              <p className="text-xs text-gray-500">QR sudah tertempel di desain, siap cetak</p>
             </div>
           </div>
 
-          {qrDataUrl && (
+          {newId && (
             <div className="space-y-3">
-              <div className="flex justify-center">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={qrDataUrl}
-                  alt="QR Aktivasi"
-                  style={{ width: 160, height: 160, borderRadius: 8, border: '1px solid #e5e7eb', padding: 8, background: 'white' }}
-                />
-              </div>
-              <PrintButton />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`/api/card-image/${newId}`}
+                alt="Preview Design"
+                className="w-full rounded-xl border border-gray-100"
+              />
+              <a
+                href={`/api/card-image/${newId}`}
+                download={`review-card-${newId}.png`}
+                className="flex items-center justify-center gap-2 w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3 px-4 rounded-xl text-sm transition-colors"
+              >
+                ⬇️ Download Design
+              </a>
             </div>
           )}
         </div>
