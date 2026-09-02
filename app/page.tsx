@@ -14,9 +14,9 @@ export default function Home() {
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Cara Kerja</p>
           <div className="space-y-4">
             {[
-              { n: '1', title: 'Cetak & tulis kartu', desc: 'Generate ID unik, tulis URL ke chip NFC, lalu print QR code-nya.' },
-              { n: '2', title: 'Aktivasi oleh bisnis', desc: 'Pemilik bisnis scan QR atau tap NFC, isi nama bisnis dan buat PIN.' },
-              { n: '3', title: 'Pelanggan langsung review', desc: 'Tap kartu NFC — pelanggan langsung diarahkan ke halaman Google Review.' },
+              { n: '1', title: 'Terima kartu dari tim kami', desc: 'Kartu NFC sudah siap dengan QR code dan chip yang terprogram.' },
+              { n: '2', title: 'Aktifkan kartu', desc: 'Scan QR atau tap kartu ke HP, isi nama bisnis dan buat PIN.' },
+              { n: '3', title: 'Siap dipakai', desc: 'Pelanggan tap kartu NFC — langsung diarahkan ke halaman Google Review.' },
             ].map(({ n, title, desc }) => (
               <div key={n} className="flex items-start gap-3">
                 <div className="w-7 h-7 rounded-full border border-gray-200 flex items-center justify-center text-xs font-semibold text-gray-500 flex-shrink-0 mt-0.5">
@@ -31,23 +31,8 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="space-y-2">
-          <a
-            href="/print"
-            className="w-full flex items-center justify-center bg-gray-900 hover:bg-gray-800 text-white font-semibold py-4 px-4 rounded-2xl transition-colors text-sm"
-          >
-            Cetak Kartu NFC
-          </a>
-          <a
-            href="/kartu"
-            className="w-full flex items-center justify-center border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium py-3 px-4 rounded-2xl transition-colors text-sm"
-          >
-            Lihat Semua Kartu
-          </a>
-        </div>
-
         <p className="text-center text-xs text-gray-300 pb-4">
-          Fitur tulis NFC membutuhkan Chrome di Android
+          Sudah punya kartu? Scan QR code di kartu untuk mengaktifkan.
         </p>
 
       </div>
