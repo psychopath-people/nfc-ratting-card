@@ -23,7 +23,7 @@ export default function QRScanner() {
   const [code, setCode] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
   const router = useRouter()
-  const scannerRef = useRef<{ clear: () => Promise<void> } | null>(null)
+  const scannerRef = useRef<{ stop: () => Promise<void>; clear: () => void } | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
   async function startScan() {
@@ -56,12 +56,16 @@ export default function QRScanner() {
   }
 
   async function stopScan() {
-    try { await scannerRef.current?.clear() } catch { /* ignore */ }
+    try { await scannerRef.current?.stop() } catch { /* ignore */ }
+    try { scannerRef.current?.clear() } catch { /* ignore */ }
     scannerRef.current = null
     setState('idle')
   }
 
-  useEffect(() => () => { scannerRef.current?.clear().catch(() => {}) }, [])
+  useEffect(() => () => {
+    scannerRef.current?.stop().catch(() => {})
+    scannerRef.current?.clear()
+  }, [])
 
   if (state === 'scanning') {
     return (
