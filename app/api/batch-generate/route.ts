@@ -1,4 +1,4 @@
-import { registerCard } from '@/lib/sheets'
+import { registerCard } from '@/lib/db'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(req: NextRequest) {

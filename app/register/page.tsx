@@ -1,4 +1,4 @@
-import { registerCard } from '@/lib/sheets'
+import { registerCard } from '@/lib/db'
 import { generateQRDataURL } from '@/lib/qr'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'

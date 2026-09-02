@@ -1,4 +1,4 @@
-import { findCard, editCard } from '@/lib/sheets'
+import { findCard, editCard } from '@/lib/db'
 import { hashPin, verifyPin } from '@/lib/crypto'
 import { extractPlaceIdFromUrl } from '@/lib/maps'
 import { NextRequest, NextResponse } from 'next/server'

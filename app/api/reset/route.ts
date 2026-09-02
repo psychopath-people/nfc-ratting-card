@@ -1,4 +1,4 @@
-import { findCard, resetCard } from '@/lib/sheets'
+import { findCard, resetCard } from '@/lib/db'
 import { verifyPin } from '@/lib/crypto'
 import { NextRequest, NextResponse } from 'next/server'
 

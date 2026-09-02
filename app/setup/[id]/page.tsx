@@ -1,4 +1,4 @@
-import { findCard, setupCard } from '@/lib/sheets'
+import { findCard, setupCard } from '@/lib/db'
 import { generateQRDataURL } from '@/lib/qr'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'

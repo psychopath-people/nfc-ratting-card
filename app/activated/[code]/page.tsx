@@ -1,4 +1,4 @@
-import { findCard } from '@/lib/sheets'
+import { findCard } from '@/lib/db'
 import { redirect } from 'next/navigation'
 import ActivatedClient from './ActivatedClient'
 

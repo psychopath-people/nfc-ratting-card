@@ -1,4 +1,4 @@
-import { getAllCards } from '@/lib/sheets'
+import { getAllCards } from '@/lib/db'
 
 export default async function KartuPage() {
   const cards = await getAllCards().catch(() => [])

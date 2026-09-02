@@ -1,4 +1,4 @@
-import { findCard } from '@/lib/sheets'
+import { findCard } from '@/lib/db'
 import { generateQRSVG } from '@/lib/qr'
 import { headers } from 'next/headers'
 import { PrintButton } from '@/components/print-button'
