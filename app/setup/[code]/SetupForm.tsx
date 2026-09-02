@@ -13,6 +13,7 @@ export default function SetupForm({ code, cafeName }: { code: string; cafeName: 
   const [mapsUrl, setMapsUrl] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [reviewUrl, setReviewUrl] = useState('')
 
   const urlOk = mapsUrl.length > 0 && isGoogleUrl(mapsUrl)
   const urlBad = mapsUrl.length > 0 && !isGoogleUrl(mapsUrl)
@@ -30,7 +31,7 @@ export default function SetupForm({ code, cafeName }: { code: string; cafeName: 
       })
       const data = await res.json()
       if (res.ok && data.reviewUrl) {
-        window.location.href = data.reviewUrl
+        setReviewUrl(data.reviewUrl)
       } else {
         setError(data.error || 'Gagal menyimpan')
       }
@@ -39,6 +40,49 @@ export default function SetupForm({ code, cafeName }: { code: string; cafeName: 
     } finally {
       setSubmitting(false)
     }
+  }
+
+  if (reviewUrl) {
+    return (
+      <main className="min-h-screen flex items-center justify-center p-4" style={{ background: '#eef2f7' }}>
+        <div className="w-full max-w-sm bg-white rounded-3xl shadow-sm p-7 space-y-6 text-center">
+          <div className="flex justify-center">
+            <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: '#e8f5e9' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#34a853" className="w-9 h-9">
+                <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clipRule="evenodd" />
+              </svg>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <h1 className="text-2xl font-bold text-gray-900">Kartu Siap!</h1>
+            <p className="text-sm text-gray-500 leading-relaxed">
+              Link Google Maps <strong className="text-gray-800">{cafeName}</strong> berhasil disimpan. Kartu NFC kamu sudah aktif sepenuhnya.
+            </p>
+          </div>
+
+          <div className="bg-gray-50 rounded-2xl p-4 text-left space-y-1">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Sekarang pelanggan bisa</p>
+            <p className="text-sm text-gray-700">Tap kartu NFC atau scan QR → langsung ke halaman review Google Maps bisnis kamu</p>
+          </div>
+
+          <div className="space-y-3">
+            <a
+              href={reviewUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full text-white font-semibold py-4 rounded-2xl text-sm transition-all"
+              style={{ background: '#1a73e8' }}
+            >
+              Coba Buka Halaman Review
+            </a>
+            <p className="text-xs text-gray-400">
+              Link bisa diubah kapan saja lewat halaman edit kartu menggunakan PIN.
+            </p>
+          </div>
+        </div>
+      </main>
+    )
   }
 
   return (
