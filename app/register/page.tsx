@@ -3,6 +3,7 @@ import { generateQRDataURL } from '@/lib/qr'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { WriteNFCButton } from '@/components/write-nfc-button'
+import PrintButton from './PrintButton'
 
 export default async function RegisterPage({
   searchParams,
@@ -134,12 +135,7 @@ export default async function RegisterPage({
                 />
               </div>
               <p className="text-xs text-center text-gray-400 font-mono break-all">{activateUrl}</p>
-              <button
-                onClick={() => window.print()}
-                className="w-full border border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white font-semibold py-3 px-4 rounded-xl text-sm transition-colors"
-              >
-                Print QR Code
-              </button>
+              <PrintButton />
             </div>
           )}
         </div>
