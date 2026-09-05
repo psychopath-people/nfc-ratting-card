@@ -13,6 +13,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       cafeName: card.cafeName,
       reviewUrl: card.reviewUrl,
+      whatsappNumber: card.whatsappNumber,
       status: card.status,
     })
   } catch {

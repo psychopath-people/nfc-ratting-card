@@ -7,6 +7,7 @@ export type Card = {
   cardId: string
   cafeName: string
   reviewUrl: string
+  whatsappNumber: string
   status: CardStatus
   createdAt: string
   updatedAt: string
@@ -20,6 +21,7 @@ function rowToCard(row: Record<string, unknown>): Card {
     cardId: row.id as string,
     cafeName: (row.cafe_name as string) || '',
     reviewUrl: (row.review_url as string) || '',
+    whatsappNumber: (row.whatsapp_number as string) || '',
     status: rawStatus === 'active' ? 'active' : 'inactive',
     createdAt: (row.created_at as string) || '',
     updatedAt: (row.updated_at as string) || '',
@@ -98,7 +100,8 @@ export async function editCard(
   cardId: string,
   cafeName: string,
   reviewUrl: string,
-  newPinHash?: string
+  newPinHash?: string,
+  whatsappNumber?: string
 ) {
   const update: Record<string, unknown> = {
     cafe_name: cafeName,
@@ -106,6 +109,7 @@ export async function editCard(
     updated_at: new Date().toISOString(),
   }
   if (newPinHash) update.pin_hash = newPinHash
+  if (whatsappNumber !== undefined) update.whatsapp_number = whatsappNumber
 
   const { error } = await supabase
     .from('cards')

@@ -11,6 +11,7 @@ function isGoogleUrl(url: string) {
 
 export default function SetupForm({ code, cafeName }: { code: string; cafeName: string }) {
   const [mapsUrl, setMapsUrl] = useState('')
+  const [waNumber, setWaNumber] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [reviewUrl, setReviewUrl] = useState('')
@@ -27,7 +28,7 @@ export default function SetupForm({ code, cafeName }: { code: string; cafeName: 
       const res = await fetch('/api/setup-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, mapsUrl: mapsUrl.trim() }),
+        body: JSON.stringify({ code, mapsUrl: mapsUrl.trim(), waNumber: waNumber.trim() }),
       })
       const data = await res.json()
       if (res.ok && data.reviewUrl) {
@@ -132,6 +133,21 @@ export default function SetupForm({ code, cafeName }: { code: string; cafeName: 
             <p className="mt-1.5 text-xs text-gray-400">
               Buka Google Maps → cari bisnis → Bagikan → Salin link
             </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-800 mb-2">
+              Nomor WhatsApp <span className="font-normal text-gray-400">(untuk terima keluhan pelanggan)</span>
+            </label>
+            <input
+              type="tel"
+              value={waNumber}
+              onChange={e => setWaNumber(e.target.value.replace(/\D/g, ''))}
+              placeholder="08xxxxxxxxxx"
+              inputMode="numeric"
+              className="w-full px-4 py-3.5 rounded-xl border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 text-sm"
+            />
+            <p className="mt-1.5 text-xs text-gray-400">Keluhan bintang 1–3 akan dikirim ke nomor ini</p>
           </div>
 
           <button

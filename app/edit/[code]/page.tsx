@@ -34,6 +34,7 @@ export default function EditPage() {
   const [loadingCard, setLoadingCard] = useState(true)
   const [cafeName, setCafeName] = useState('')
   const [mapsUrl, setMapsUrl] = useState('')
+  const [waNumber, setWaNumber] = useState('')
   const [currentPin, setCurrentPin] = useState('')
   const [showCurrentPin, setShowCurrentPin] = useState(false)
   const [newPin, setNewPin] = useState('')
@@ -54,6 +55,7 @@ export default function EditPage() {
         if (d.cafeName !== undefined) {
           setCafeName(d.cafeName)
           setMapsUrl(d.reviewUrl || '')
+          setWaNumber(d.whatsappNumber || '')
         }
       })
       .catch(() => {})
@@ -72,7 +74,7 @@ export default function EditPage() {
       const res = await fetch('/api/edit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, currentPin, cafeName: cafeName.trim(), mapsUrl: mapsUrl.trim(), newPin: newPin || undefined }),
+        body: JSON.stringify({ code, currentPin, cafeName: cafeName.trim(), mapsUrl: mapsUrl.trim(), newPin: newPin || undefined, waNumber: waNumber.trim() }),
       })
       const data = await res.json()
       if (res.ok) {
@@ -199,6 +201,22 @@ export default function EditPage() {
               </div>
               {urlBad && <p className="mt-1 text-xs text-red-500">Harus link dari Google Maps</p>}
               <p className="mt-1.5 text-xs text-gray-400">Buka Google Maps → cari bisnis → Bagikan → Salin link</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-800 mb-2">
+                Nomor WhatsApp <span className="font-normal text-gray-400">(untuk terima keluhan pelanggan)</span>
+              </label>
+              <input
+                type="tel"
+                value={waNumber}
+                onChange={e => setWaNumber(e.target.value.replace(/\D/g, ''))}
+                placeholder="08xxxxxxxxxx"
+                inputMode="numeric"
+                disabled={loadingCard}
+                className="w-full px-4 py-3.5 rounded-xl border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 text-sm transition-all disabled:opacity-50"
+              />
+              <p className="mt-1.5 text-xs text-gray-400">Keluhan bintang 1–3 akan dikirim ke nomor ini</p>
             </div>
 
             <div>

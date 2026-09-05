@@ -17,7 +17,7 @@ async function resolveMapsUrl(url: string): Promise<string> {
 
 export async function POST(req: NextRequest) {
   try {
-    const { code, mapsUrl } = await req.json()
+    const { code, mapsUrl, waNumber } = await req.json()
 
     if (!code || !mapsUrl?.trim()) {
       return NextResponse.json({ error: 'Link Google Maps wajib diisi' }, { status: 400 })
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     if (card.reviewUrl) return NextResponse.json({ error: 'Kartu sudah di-setup' }, { status: 409 })
 
     const finalUrl = await resolveMapsUrl(mapsUrl.trim())
-    await editCard(code, card.cafeName, finalUrl)
+    await editCard(code, card.cafeName, finalUrl, undefined, waNumber?.trim() || '')
 
     return NextResponse.json({ ok: true, reviewUrl: finalUrl })
   } catch (err) {
