@@ -69,6 +69,7 @@ export default function EditPage() {
     setError('')
     if (!/^\d{4}$/.test(currentPin)) { setError('PIN saat ini harus 4 digit'); return }
     if (!cafeName.trim()) { setError('Nama bisnis wajib diisi'); return }
+    if (reviewMode === 'filtered' && !waNumber.trim()) { setError('Nomor WhatsApp wajib diisi untuk mode Filter Bintang'); return }
     if (newPin && !/^\d{4}$/.test(newPin)) { setError('PIN baru harus 4 digit'); return }
 
     setSubmitting(true)

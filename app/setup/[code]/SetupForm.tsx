@@ -23,6 +23,7 @@ export default function SetupForm({ code, cafeName }: { code: string; cafeName: 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!urlOk) { setError('Masukkan link dari Google Maps'); return }
+    if (reviewMode === 'filtered' && !waNumber.trim()) { setError('Nomor WhatsApp wajib diisi untuk mode Filter Bintang'); return }
     setError('')
     setSubmitting(true)
     try {

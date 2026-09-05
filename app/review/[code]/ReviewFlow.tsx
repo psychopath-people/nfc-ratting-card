@@ -123,9 +123,15 @@ export default function ReviewFlow({
             className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-red-300 resize-none"
           />
 
+          {!whatsappNumber && (
+            <div className="rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-xs text-orange-700">
+              Nomor WhatsApp pemilik belum diisi. Hubungi pemilik bisnis secara langsung.
+            </div>
+          )}
+
           <button
             onClick={sendComplaint}
-            disabled={!complaint.trim()}
+            disabled={!complaint.trim() || !whatsappNumber}
             className="w-full flex items-center justify-center gap-2 font-semibold py-4 rounded-2xl text-sm text-white transition-all disabled:opacity-40"
             style={{ background: '#25D366' }}
           >
