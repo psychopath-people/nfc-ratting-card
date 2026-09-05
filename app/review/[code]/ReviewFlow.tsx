@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-type Step = 'stars' | 'complaint' | 'positive' | 'done'
+type Step = 'stars' | 'complaint' | 'done'
 
 function StarIcon({ filled }: { filled: boolean }) {
   return (
@@ -13,7 +13,6 @@ function StarIcon({ filled }: { filled: boolean }) {
 }
 
 export default function ReviewFlow({
-  code,
   cafeName,
   reviewUrl,
   whatsappNumber,
@@ -27,17 +26,18 @@ export default function ReviewFlow({
   const [hovered, setHovered] = useState(0)
   const [selected, setSelected] = useState(0)
   const [complaint, setComplaint] = useState('')
-  const [reviewText, setReviewText] = useState('Pelayanan sangat baik dan memuaskan! Sangat recommended 👍')
-  const [submitting, setSubmitting] = useState(false)
+  const [redirecting, setRedirecting] = useState(false)
 
   const display = hovered || selected
 
   function handleStarClick(n: number) {
     setSelected(n)
-    setTimeout(() => {
-      if (n <= 3) setStep('complaint')
-      else setStep('positive')
-    }, 300)
+    if (n <= 3) {
+      setTimeout(() => setStep('complaint'), 300)
+    } else {
+      setRedirecting(true)
+      setTimeout(() => { window.location.href = reviewUrl }, 400)
+    }
   }
 
   function sendComplaint() {
@@ -48,11 +48,6 @@ export default function ReviewFlow({
     )
     window.open(`https://wa.me/${number}?text=${msg}`, '_blank')
     setStep('done')
-  }
-
-  function goToGoogleMaps() {
-    setSubmitting(true)
-    window.location.href = reviewUrl
   }
 
   const starsLabel = ['', 'Sangat Buruk', 'Buruk', 'Cukup', 'Bagus', 'Luar Biasa!']
@@ -67,27 +62,39 @@ export default function ReviewFlow({
             <h1 className="text-xl font-bold text-gray-900">{cafeName}</h1>
           </div>
 
-          <div className="space-y-3">
-            <p className="text-sm text-gray-600">Bagaimana pengalaman kamu?</p>
-            <div className="flex justify-center gap-2">
-              {[1, 2, 3, 4, 5].map((n) => (
-                <button
-                  key={n}
-                  onMouseEnter={() => setHovered(n)}
-                  onMouseLeave={() => setHovered(0)}
-                  onClick={() => handleStarClick(n)}
-                  className="transition-transform hover:scale-110 active:scale-95"
-                >
-                  <StarIcon filled={n <= display} />
-                </button>
-              ))}
+          {redirecting ? (
+            <div className="py-6 space-y-3">
+              <div className="flex justify-center">
+                <svg className="animate-spin w-8 h-8 text-blue-500" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                </svg>
+              </div>
+              <p className="text-sm text-gray-500">Membuka Google Maps...</p>
             </div>
-            <p className="text-sm font-semibold h-5" style={{ color: selected <= 3 && selected > 0 ? '#ea4335' : '#1a73e8' }}>
-              {display > 0 ? starsLabel[display] : ''}
-            </p>
-          </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-sm text-gray-600">Bagaimana pengalaman kamu?</p>
+              <div className="flex justify-center gap-2">
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <button
+                    key={n}
+                    onMouseEnter={() => setHovered(n)}
+                    onMouseLeave={() => setHovered(0)}
+                    onClick={() => handleStarClick(n)}
+                    className="transition-transform hover:scale-110 active:scale-95"
+                  >
+                    <StarIcon filled={n <= display} />
+                  </button>
+                ))}
+              </div>
+              <p className="text-sm font-semibold h-5" style={{ color: selected <= 3 && selected > 0 ? '#ea4335' : '#1a73e8' }}>
+                {display > 0 ? starsLabel[display] : ''}
+              </p>
+            </div>
+          )}
 
-          <p className="text-xs text-gray-400">Tap bintang untuk melanjutkan</p>
+          {!redirecting && <p className="text-xs text-gray-400">Tap bintang untuk melanjutkan</p>}
         </div>
       </main>
     )
@@ -127,56 +134,6 @@ export default function ReviewFlow({
               <path d="M12 0C5.373 0 0 5.373 0 12c0 2.116.553 4.103 1.522 5.828L.057 23.486a.75.75 0 00.914.914l5.657-1.465A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.891 0-3.667-.5-5.2-1.373l-.374-.213-3.874 1.003 1.003-3.874-.213-.374A9.944 9.944 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
             </svg>
             Kirim Keluhan via WhatsApp
-          </button>
-
-          <button onClick={() => setStep('stars')} className="w-full text-xs text-gray-400 hover:text-gray-600 py-1">
-            ← Kembali
-          </button>
-        </div>
-      </main>
-    )
-  }
-
-  // Step: positive review (4–5 stars)
-  if (step === 'positive') {
-    return (
-      <main className="min-h-screen flex items-center justify-center p-5" style={{ background: '#eef2f7' }}>
-        <div className="w-full max-w-sm bg-white rounded-3xl shadow-sm p-7 space-y-5">
-          <div className="text-center space-y-2">
-            <div className="flex justify-center gap-1">
-              {[1,2,3,4,5].map(n => <StarIcon key={n} filled={n <= selected} />)}
-            </div>
-            <h2 className="text-lg font-bold text-gray-900">Senang kamu puas!</h2>
-            <p className="text-sm text-gray-500">
-              Bagikan pengalaman positif kamu di Google Maps, bantu bisnis kami berkembang!
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Review kamu</label>
-            <textarea
-              value={reviewText}
-              onChange={e => setReviewText(e.target.value)}
-              rows={4}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 resize-none"
-            />
-            <p className="text-xs text-gray-400">Kamu bisa edit sebelum dikirim ke Google Maps</p>
-          </div>
-
-          <button
-            onClick={goToGoogleMaps}
-            disabled={submitting || !reviewText.trim()}
-            className="w-full flex items-center justify-center gap-2 font-semibold py-4 rounded-2xl text-sm text-white transition-all disabled:opacity-50"
-            style={{ background: '#1a73e8' }}
-          >
-            {submitting ? 'Membuka Google Maps...' : (
-              <>
-                <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                </svg>
-                Kirim ke Google Maps
-              </>
-            )}
           </button>
 
           <button onClick={() => setStep('stars')} className="w-full text-xs text-gray-400 hover:text-gray-600 py-1">

@@ -24,8 +24,10 @@ export default async function CardPage({
   }
 
   if (card.status === 'active') {
-    if (card.reviewUrl) redirect(card.reviewUrl)
-    else redirect(`/edit/${code}`)
+    if (card.reviewUrl) {
+      if (card.reviewMode === 'filtered') redirect(`/review/${code}`)
+      else redirect(card.reviewUrl)
+    } else redirect(`/edit/${code}`)
   }
 
   return <ActivateForm code={code} />
