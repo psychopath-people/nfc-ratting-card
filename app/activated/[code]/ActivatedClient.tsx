@@ -15,9 +15,11 @@ function Spinner() {
 export default function ActivatedClient({
   code,
   reviewUrl,
+  reviewMode,
 }: {
   code: string
   reviewUrl: string
+  reviewMode: 'filtered' | 'direct'
 }) {
   const router = useRouter()
   const [loadingEdit, setLoadingEdit] = useState(false)
@@ -26,6 +28,8 @@ export default function ActivatedClient({
     setLoadingEdit(true)
     router.push(`/edit/${code}`)
   }
+
+  const previewUrl = reviewMode === 'filtered' ? `/review/${code}` : reviewUrl
 
   return (
     <main className="min-h-screen bg-white flex items-center justify-center p-4">
@@ -41,20 +45,36 @@ export default function ActivatedClient({
           <h1 className="text-2xl font-semibold text-gray-900">Kartu Aktif</h1>
           <p className="text-sm text-gray-500 mt-1 leading-relaxed">
             {reviewUrl
-              ? 'Kartu sudah terhubung ke Google Review. Pelanggan bisa tap NFC atau scan QR untuk langsung memberi ulasan.'
+              ? 'Kartu sudah terhubung ke Google Review. Pelanggan bisa tap NFC atau scan QR untuk memberi ulasan.'
               : 'Kartu berhasil diaktifkan. Satu langkah lagi — hubungkan ke lokasi Google Maps bisnis kamu.'}
           </p>
         </div>
 
+        {reviewUrl && (
+          <div className="mb-5 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 flex items-start gap-3">
+            <div className={`mt-0.5 w-2 h-2 rounded-full flex-shrink-0 ${reviewMode === 'filtered' ? 'bg-blue-500' : 'bg-green-500'}`} />
+            <div>
+              <p className="text-xs font-semibold text-gray-700">
+                Mode: {reviewMode === 'filtered' ? 'Filter Bintang' : 'Langsung Maps'}
+              </p>
+              <p className="text-xs text-gray-400 mt-0.5 leading-snug">
+                {reviewMode === 'filtered'
+                  ? 'Bintang 1–3 → WA keluhan · Bintang 4–5 → Google Maps'
+                  : 'Tap kartu langsung buka halaman Google Maps'}
+              </p>
+            </div>
+          </div>
+        )}
+
         {reviewUrl ? (
           <div className="space-y-3 mb-6">
             <a
-              href={reviewUrl}
+              href={previewUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 w-full text-center bg-gray-900 hover:bg-gray-800 text-white font-medium py-3 px-4 rounded-lg transition-colors text-sm"
             >
-              Buka Halaman Review
+              Preview Halaman Review
             </a>
             <button
               onClick={goToEdit}

@@ -18,6 +18,7 @@ export default async function ActivatedPage({
     <ActivatedClient
       code={code}
       reviewUrl={card.reviewUrl}
+      reviewMode={card.reviewMode}
     />
   )
 }
