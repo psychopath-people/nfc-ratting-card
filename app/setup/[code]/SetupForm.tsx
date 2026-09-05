@@ -12,6 +12,7 @@ function isGoogleUrl(url: string) {
 export default function SetupForm({ code, cafeName }: { code: string; cafeName: string }) {
   const [mapsUrl, setMapsUrl] = useState('')
   const [waNumber, setWaNumber] = useState('')
+  const [reviewMode, setReviewMode] = useState<'filtered' | 'direct'>('filtered')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [reviewUrl, setReviewUrl] = useState('')
@@ -28,7 +29,7 @@ export default function SetupForm({ code, cafeName }: { code: string; cafeName: 
       const res = await fetch('/api/setup-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, mapsUrl: mapsUrl.trim(), waNumber: waNumber.trim() }),
+        body: JSON.stringify({ code, mapsUrl: mapsUrl.trim(), waNumber: waNumber.trim(), reviewMode }),
       })
       const data = await res.json()
       if (res.ok && data.reviewUrl) {
@@ -148,6 +149,40 @@ export default function SetupForm({ code, cafeName }: { code: string; cafeName: 
               className="w-full px-4 py-3.5 rounded-xl border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 text-sm"
             />
             <p className="mt-1.5 text-xs text-gray-400">Keluhan bintang 1–3 akan dikirim ke nomor ini</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-800 mb-2">Mode Review</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setReviewMode('filtered')}
+                className={`p-3.5 rounded-xl border-2 text-left transition-all ${
+                  reviewMode === 'filtered'
+                    ? 'border-blue-400 bg-blue-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <p className={`text-sm font-semibold ${reviewMode === 'filtered' ? 'text-blue-700' : 'text-gray-700'}`}>
+                  Filter Dulu
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5 leading-snug">Bintang rendah → WA, bintang tinggi → Maps</p>
+              </button>
+              <button
+                type="button"
+                onClick={() => setReviewMode('direct')}
+                className={`p-3.5 rounded-xl border-2 text-left transition-all ${
+                  reviewMode === 'direct'
+                    ? 'border-blue-400 bg-blue-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <p className={`text-sm font-semibold ${reviewMode === 'direct' ? 'text-blue-700' : 'text-gray-700'}`}>
+                  Langsung Maps
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5 leading-snug">Tap → langsung ke halaman review Google Maps</p>
+              </button>
+            </div>
           </div>
 
           <button

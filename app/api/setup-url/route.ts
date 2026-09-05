@@ -17,7 +17,7 @@ async function resolveMapsUrl(url: string): Promise<string> {
 
 export async function POST(req: NextRequest) {
   try {
-    const { code, mapsUrl, waNumber } = await req.json()
+    const { code, mapsUrl, waNumber, reviewMode } = await req.json()
 
     if (!code || !mapsUrl?.trim()) {
       return NextResponse.json({ error: 'Link Google Maps wajib diisi' }, { status: 400 })
@@ -28,8 +28,9 @@ export async function POST(req: NextRequest) {
     if (card.status !== 'active') return NextResponse.json({ error: 'Kartu belum aktif' }, { status: 400 })
     if (card.reviewUrl) return NextResponse.json({ error: 'Kartu sudah di-setup' }, { status: 409 })
 
+    const mode = reviewMode === 'direct' ? 'direct' : 'filtered'
     const finalUrl = await resolveMapsUrl(mapsUrl.trim())
-    await editCard(code, card.cafeName, finalUrl, undefined, waNumber?.trim() || '')
+    await editCard(code, card.cafeName, finalUrl, undefined, waNumber?.trim() || '', mode)
 
     return NextResponse.json({ ok: true, reviewUrl: finalUrl })
   } catch (err) {

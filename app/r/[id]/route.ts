@@ -17,7 +17,10 @@ export async function GET(
     redirect(`/edit/${id}`)
   }
 
-  // Always go through the review filter page — it handles star rating,
-  // complaint routing (low stars → WA), and the iOS Google Maps deep link.
+  if (card.reviewMode === 'direct') {
+    redirect(card.reviewUrl)
+  }
+
+  // filtered mode: go through star rating page first
   redirect(`/review/${id}`)
 }

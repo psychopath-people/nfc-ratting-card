@@ -18,7 +18,7 @@ async function resolveMapsUrl(url: string): Promise<string> {
 
 export async function POST(req: NextRequest) {
   try {
-    const { code, currentPin, cafeName, mapsUrl, reviewUrl, newPin, waNumber } = await req.json()
+    const { code, currentPin, cafeName, mapsUrl, reviewUrl, newPin, waNumber, reviewMode } = await req.json()
     const rawUrl: string = mapsUrl || reviewUrl || ''
 
     if (!code || !currentPin || !cafeName) {
@@ -35,7 +35,8 @@ export async function POST(req: NextRequest) {
 
     const finalUrl = rawUrl ? await resolveMapsUrl(rawUrl) : card.reviewUrl
     const newPinHash = newPin ? hashPin(newPin) : undefined
-    await editCard(code, cafeName.trim(), finalUrl, newPinHash, waNumber?.trim())
+    const mode = reviewMode === 'direct' ? 'direct' : reviewMode === 'filtered' ? 'filtered' : undefined
+    await editCard(code, cafeName.trim(), finalUrl, newPinHash, waNumber?.trim(), mode)
 
     return NextResponse.json({ ok: true })
   } catch (err) {

@@ -2,12 +2,14 @@ import { supabase } from './supabase'
 import { randomBytes } from 'crypto'
 
 export type CardStatus = 'inactive' | 'active'
+export type ReviewMode = 'direct' | 'filtered'
 
 export type Card = {
   cardId: string
   cafeName: string
   reviewUrl: string
   whatsappNumber: string
+  reviewMode: ReviewMode
   status: CardStatus
   createdAt: string
   updatedAt: string
@@ -17,11 +19,13 @@ export type Card = {
 
 function rowToCard(row: Record<string, unknown>): Card {
   const rawStatus = row.status as string
+  const rawMode = row.review_mode as string
   return {
     cardId: row.id as string,
     cafeName: (row.cafe_name as string) || '',
     reviewUrl: (row.review_url as string) || '',
     whatsappNumber: (row.whatsapp_number as string) || '',
+    reviewMode: rawMode === 'direct' ? 'direct' : 'filtered',
     status: rawStatus === 'active' ? 'active' : 'inactive',
     createdAt: (row.created_at as string) || '',
     updatedAt: (row.updated_at as string) || '',
@@ -101,7 +105,8 @@ export async function editCard(
   cafeName: string,
   reviewUrl: string,
   newPinHash?: string,
-  whatsappNumber?: string
+  whatsappNumber?: string,
+  reviewMode?: ReviewMode
 ) {
   const update: Record<string, unknown> = {
     cafe_name: cafeName,
@@ -110,6 +115,7 @@ export async function editCard(
   }
   if (newPinHash) update.pin_hash = newPinHash
   if (whatsappNumber !== undefined) update.whatsapp_number = whatsappNumber
+  if (reviewMode !== undefined) update.review_mode = reviewMode
 
   const { error } = await supabase
     .from('cards')

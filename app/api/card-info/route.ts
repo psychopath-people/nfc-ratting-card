@@ -14,6 +14,7 @@ export async function GET(req: NextRequest) {
       cafeName: card.cafeName,
       reviewUrl: card.reviewUrl,
       whatsappNumber: card.whatsappNumber,
+      reviewMode: card.reviewMode,
       status: card.status,
     })
   } catch {
