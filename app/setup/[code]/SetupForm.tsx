@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 
 function isGoogleUrl(url: string) {
   try {
@@ -10,9 +11,12 @@ function isGoogleUrl(url: string) {
 }
 
 export default function SetupForm({ code, cafeName }: { code: string; cafeName: string }) {
+  const searchParams = useSearchParams()
+  const initialMode = searchParams.get('mode') === 'direct' ? 'direct' : 'filtered'
+
   const [mapsUrl, setMapsUrl] = useState('')
   const [waNumber, setWaNumber] = useState('')
-  const [reviewMode, setReviewMode] = useState<'filtered' | 'direct'>('filtered')
+  const [reviewMode, setReviewMode] = useState<'filtered' | 'direct'>(initialMode)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [reviewUrl, setReviewUrl] = useState('')

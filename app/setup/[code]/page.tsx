@@ -1,5 +1,6 @@
 import { findCard } from '@/lib/db'
 import { redirect } from 'next/navigation'
+import { Suspense } from 'react'
 import SetupForm from './SetupForm'
 
 export default async function SetupPage({
@@ -13,5 +14,9 @@ export default async function SetupPage({
   if (!card || card.status !== 'active') redirect(`/c/${code}`)
   if (card.reviewUrl) redirect(card.reviewUrl)
 
-  return <SetupForm code={code} cafeName={card.cafeName} />
+  return (
+    <Suspense>
+      <SetupForm code={code} cafeName={card.cafeName} />
+    </Suspense>
+  )
 }

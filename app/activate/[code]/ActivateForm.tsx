@@ -23,6 +23,7 @@ export default function ActivateForm({ code }: { code: string }) {
   const [cafeName, setCafeName] = useState('')
   const [pin, setPin] = useState('')
   const [showPin, setShowPin] = useState(false)
+  const [reviewMode, setReviewMode] = useState<'filtered' | 'direct'>('filtered')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
@@ -42,7 +43,7 @@ export default function ActivateForm({ code }: { code: string }) {
       })
       const data = await res.json()
       if (res.ok) {
-        router.push(`/setup/${code}`)
+        router.push(`/setup/${code}?mode=${reviewMode}`)
       } else {
         setError(data.error || 'Gagal mengaktifkan kartu')
       }
@@ -98,6 +99,40 @@ export default function ActivateForm({ code }: { code: string }) {
               />
               <button type="button" onClick={() => setShowPin(!showPin)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                 <EyeIcon open={showPin} />
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-800 mb-2">Mode Review</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setReviewMode('filtered')}
+                className={`p-3.5 rounded-xl border-2 text-left transition-all ${
+                  reviewMode === 'filtered'
+                    ? 'border-blue-400 bg-blue-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <p className={`text-sm font-semibold ${reviewMode === 'filtered' ? 'text-blue-700' : 'text-gray-700'}`}>
+                  Filter Dulu
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5 leading-snug">Bintang rendah → WA, bintang tinggi → Maps</p>
+              </button>
+              <button
+                type="button"
+                onClick={() => setReviewMode('direct')}
+                className={`p-3.5 rounded-xl border-2 text-left transition-all ${
+                  reviewMode === 'direct'
+                    ? 'border-blue-400 bg-blue-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <p className={`text-sm font-semibold ${reviewMode === 'direct' ? 'text-blue-700' : 'text-gray-700'}`}>
+                  Langsung Maps
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5 leading-snug">Tap → langsung ke halaman review Google Maps</p>
               </button>
             </div>
           </div>
