@@ -169,9 +169,9 @@ export default function SetupForm({ code, cafeName }: { code: string; cafeName: 
                 }`}
               >
                 <p className={`text-sm font-semibold ${reviewMode === 'filtered' ? 'text-blue-700' : 'text-gray-700'}`}>
-                  Filter Dulu
+                  Review Langsung
                 </p>
-                <p className="text-xs text-gray-400 mt-0.5 leading-snug">Bintang rendah → WA, bintang tinggi → Maps</p>
+                <p className="text-xs text-gray-400 mt-0.5 leading-snug">Pelanggan isi ulasan langsung di sini</p>
               </button>
               <button
                 type="button"
@@ -183,7 +183,7 @@ export default function SetupForm({ code, cafeName }: { code: string; cafeName: 
                 }`}
               >
                 <p className={`text-sm font-semibold ${reviewMode === 'direct' ? 'text-blue-700' : 'text-gray-700'}`}>
-                  Langsung Maps
+                  Ke Google Maps
                 </p>
                 <p className="text-xs text-gray-400 mt-0.5 leading-snug">Tap → langsung ke halaman review Google Maps</p>
               </button>
