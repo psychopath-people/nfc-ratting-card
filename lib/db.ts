@@ -84,7 +84,9 @@ export async function activateCard(
   cardId: string,
   cafeName: string,
   reviewUrl: string,
-  pinHash: string
+  pinHash: string,
+  reviewMode: ReviewMode = 'filtered',
+  whatsappNumber = ''
 ) {
   const { error } = await supabase
     .from('cards')
@@ -93,6 +95,8 @@ export async function activateCard(
       review_url: reviewUrl,
       status: 'active',
       pin_hash: pinHash,
+      review_mode: reviewMode,
+      whatsapp_number: whatsappNumber,
       updated_at: new Date().toISOString(),
     })
     .eq('id', cardId)

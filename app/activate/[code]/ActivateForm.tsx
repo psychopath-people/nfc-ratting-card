@@ -24,6 +24,7 @@ export default function ActivateForm({ code }: { code: string }) {
   const [pin, setPin] = useState('')
   const [showPin, setShowPin] = useState(false)
   const [reviewMode, setReviewMode] = useState<'filtered' | 'direct'>('filtered')
+  const [waNumber, setWaNumber] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
@@ -33,17 +34,24 @@ export default function ActivateForm({ code }: { code: string }) {
     setError('')
     if (!cafeName.trim()) { setError('Nama bisnis wajib diisi'); return }
     if (!/^\d{4}$/.test(pin)) { setError('PIN harus 4 digit angka'); return }
+    if (reviewMode === 'filtered' && !waNumber.trim()) { setError('Nomor WhatsApp wajib diisi untuk mode ini'); return }
 
     setSubmitting(true)
     try {
       const res = await fetch('/api/activate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, cafeName: cafeName.trim(), pin }),
+        body: JSON.stringify({
+          code,
+          cafeName: cafeName.trim(),
+          pin,
+          reviewMode,
+          waNumber: waNumber.trim(),
+        }),
       })
       const data = await res.json()
       if (res.ok) {
-        router.push(`/setup/${code}?mode=${reviewMode}`)
+        router.push(`/setup/${code}`)
       } else {
         setError(data.error || 'Gagal mengaktifkan kartu')
       }
@@ -136,6 +144,23 @@ export default function ActivateForm({ code }: { code: string }) {
               </button>
             </div>
           </div>
+
+          {reviewMode === 'filtered' && (
+            <div>
+              <label className="block text-sm font-semibold text-gray-800 mb-2">
+                Nomor WhatsApp <span className="font-normal text-gray-400">(untuk terima notifikasi)</span>
+              </label>
+              <input
+                type="tel"
+                value={waNumber}
+                onChange={e => setWaNumber(e.target.value.replace(/\D/g, ''))}
+                placeholder="08xxxxxxxxxx"
+                inputMode="numeric"
+                className="w-full px-4 py-3.5 rounded-xl border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 text-sm"
+              />
+              <p className="mt-1.5 text-xs text-gray-400">Masukkan nomor yang aktif menerima pesan</p>
+            </div>
+          )}
 
           <button
             type="submit"

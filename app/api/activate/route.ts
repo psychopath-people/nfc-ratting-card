@@ -5,7 +5,6 @@ import { NextRequest, NextResponse } from 'next/server'
 
 async function resolveMapsUrl(url: string): Promise<string> {
   let resolved = url
-
   const isShort = /maps\.app\.goo\.gl|goo\.gl|g\.page|g\.co\//.test(url)
   if (isShort) {
     try {
@@ -13,14 +12,13 @@ async function resolveMapsUrl(url: string): Promise<string> {
       resolved = r.url
     } catch { /* use original */ }
   }
-
   const { reviewUrl } = extractPlaceIdFromUrl(resolved)
   return reviewUrl ?? resolved
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const { code, cafeName, mapsUrl, reviewUrl, pin } = await req.json()
+    const { code, cafeName, mapsUrl, reviewUrl, pin, reviewMode, waNumber } = await req.json()
     const rawUrl: string = mapsUrl || reviewUrl || ''
 
     if (!code || !cafeName || !pin) {
@@ -36,7 +34,9 @@ export async function POST(req: NextRequest) {
 
     const finalUrl = rawUrl ? await resolveMapsUrl(rawUrl) : ''
     const pinHash = hashPin(pin)
-    await activateCard(code, cafeName.trim(), finalUrl, pinHash)
+    const mode = reviewMode === 'direct' ? 'direct' : 'filtered'
+
+    await activateCard(code, cafeName.trim(), finalUrl, pinHash, mode, waNumber?.trim() || '')
 
     return NextResponse.json({ ok: true })
   } catch (err) {

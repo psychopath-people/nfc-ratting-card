@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useSearchParams } from 'next/navigation'
 
 function isGoogleUrl(url: string) {
   try {
@@ -11,12 +10,7 @@ function isGoogleUrl(url: string) {
 }
 
 export default function SetupForm({ code, cafeName }: { code: string; cafeName: string }) {
-  const searchParams = useSearchParams()
-  const initialMode = searchParams.get('mode') === 'direct' ? 'direct' : 'filtered'
-
   const [mapsUrl, setMapsUrl] = useState('')
-  const [waNumber, setWaNumber] = useState('')
-  const [reviewMode, setReviewMode] = useState<'filtered' | 'direct'>(initialMode)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [reviewUrl, setReviewUrl] = useState('')
@@ -27,14 +21,13 @@ export default function SetupForm({ code, cafeName }: { code: string; cafeName: 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!urlOk) { setError('Masukkan link dari Google Maps'); return }
-    if (reviewMode === 'filtered' && !waNumber.trim()) { setError('Nomor WhatsApp wajib diisi untuk mode Filter Bintang'); return }
     setError('')
     setSubmitting(true)
     try {
       const res = await fetch('/api/setup-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, mapsUrl: mapsUrl.trim(), waNumber: waNumber.trim(), reviewMode }),
+        body: JSON.stringify({ code, mapsUrl: mapsUrl.trim() }),
       })
       const data = await res.json()
       if (res.ok && data.reviewUrl) {
@@ -139,55 +132,6 @@ export default function SetupForm({ code, cafeName }: { code: string; cafeName: 
             <p className="mt-1.5 text-xs text-gray-400">
               Buka Google Maps → cari bisnis → Bagikan → Salin link
             </p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-800 mb-2">
-              Nomor WhatsApp <span className="font-normal text-gray-400">(untuk terima keluhan pelanggan)</span>
-            </label>
-            <input
-              type="tel"
-              value={waNumber}
-              onChange={e => setWaNumber(e.target.value.replace(/\D/g, ''))}
-              placeholder="08xxxxxxxxxx"
-              inputMode="numeric"
-              className="w-full px-4 py-3.5 rounded-xl border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 text-sm"
-            />
-            <p className="mt-1.5 text-xs text-gray-400">Keluhan bintang 1–3 akan dikirim ke nomor ini</p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-800 mb-2">Mode Review</label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setReviewMode('filtered')}
-                className={`p-3.5 rounded-xl border-2 text-left transition-all ${
-                  reviewMode === 'filtered'
-                    ? 'border-blue-400 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <p className={`text-sm font-semibold ${reviewMode === 'filtered' ? 'text-blue-700' : 'text-gray-700'}`}>
-                  Review Langsung
-                </p>
-                <p className="text-xs text-gray-400 mt-0.5 leading-snug">Pelanggan isi ulasan langsung di sini</p>
-              </button>
-              <button
-                type="button"
-                onClick={() => setReviewMode('direct')}
-                className={`p-3.5 rounded-xl border-2 text-left transition-all ${
-                  reviewMode === 'direct'
-                    ? 'border-blue-400 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <p className={`text-sm font-semibold ${reviewMode === 'direct' ? 'text-blue-700' : 'text-gray-700'}`}>
-                  Ke Google Maps
-                </p>
-                <p className="text-xs text-gray-400 mt-0.5 leading-snug">Tap → langsung ke halaman review Google Maps</p>
-              </button>
-            </div>
           </div>
 
           <button
