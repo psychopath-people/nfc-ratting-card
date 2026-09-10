@@ -7,11 +7,11 @@ import QRCode from 'qrcode'
 const DESIGN_PATH = path.join(process.cwd(), 'public', 'new-design.png')
 
 // Inner QR box position (detected from new-design.png 1189x1323)
-// Border thickness ~6px, so inner area starts at 718/746 and ends at ~922/939
-const QR_LEFT = 720
-const QR_TOP = 748
-const QR_WIDTH = 194
-const QR_HEIGHT = 186
+// Inner area: x=718-923, y=746-945. Adding ~12-15px padding on all sides.
+const QR_LEFT = 730
+const QR_TOP = 758
+const QR_WIDTH = 181
+const QR_HEIGHT = 175
 
 async function generateQRBuffer(url: string, size: number): Promise<Buffer> {
   const dataUrl = await QRCode.toDataURL(url, {
