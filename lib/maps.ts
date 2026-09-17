@@ -30,7 +30,42 @@ export function extractPlaceIdFromUrl(url: string): {
     ? decodeURIComponent(rawName).replace(/\+/g, ' ').replace(/-/g, ' ').trim()
     : null
 
-  // Extract CID pair from !1s0x...:0x... in the data parameter
+  // Place ID directly in URL path: /place/Name/ChIJxxx
+  const pathPlaceIdMatch = url.match(/\/place\/[^/]+\/(ChIJ[a-zA-Z0-9_-]{10,40})/)
+  if (pathPlaceIdMatch) {
+    const placeId = pathPlaceIdMatch[1]
+    return {
+      placeId,
+      cafeName,
+      reviewUrl: `https://search.google.com/local/writereview?placeid=${placeId}`,
+    }
+  }
+
+  // Place ID in data parameter: !1sChIJxxx (iPhone format)
+  const dataPlaceIdMatch = url.match(/!1s(ChIJ[a-zA-Z0-9_-]{10,40})/)
+  if (dataPlaceIdMatch) {
+    const placeId = dataPlaceIdMatch[1]
+    return {
+      placeId,
+      cafeName,
+      reviewUrl: `https://search.google.com/local/writereview?placeid=${placeId}`,
+    }
+  }
+
+  // ftid parameter: ftid=0x...:0x... (Google Search URL format)
+  const ftidMatch = url.match(/ftid=(0x[0-9a-f]+):(0x[0-9a-f]+)/i)
+  if (ftidMatch) {
+    const low = BigInt(ftidMatch[1])
+    const high = BigInt(ftidMatch[2])
+    const placeId = cidToPlaceId(low, high)
+    return {
+      placeId,
+      cafeName,
+      reviewUrl: `https://search.google.com/local/writereview?placeid=${placeId}`,
+    }
+  }
+
+  // CID pair from !1s0x...:0x... in the data parameter (Android format)
   const cidMatch = url.match(/!1s(0x[0-9a-f]+):(0x[0-9a-f]+)/i)
   if (!cidMatch) return { placeId: null, cafeName, reviewUrl: null }
 

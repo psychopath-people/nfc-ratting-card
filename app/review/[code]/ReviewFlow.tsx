@@ -173,7 +173,7 @@ export default function ReviewFlow({
             className="text-center text-xs text-gray-400"
             style={{ minHeight: 16, transition: 'opacity 150ms' }}
           >
-            {display > 0 ? starLabels[display] : ' '}
+            {display > 0 ? starLabels[display] : ' '}
           </p>
         </div>
 

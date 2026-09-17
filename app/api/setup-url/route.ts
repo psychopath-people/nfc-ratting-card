@@ -7,7 +7,7 @@ async function resolveMapsUrl(url: string): Promise<string> {
   const isShort = /maps\.app\.goo\.gl|goo\.gl|g\.page|g\.co\//.test(url)
   if (isShort) {
     try {
-      const r = await fetch(url, { method: 'HEAD', redirect: 'follow', headers: { 'User-Agent': 'Mozilla/5.0' } })
+      const r = await fetch(url, { method: 'GET', redirect: 'follow', headers: { 'User-Agent': 'Mozilla/5.0' } })
       resolved = r.url
     } catch { /* use original */ }
   }
