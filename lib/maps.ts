@@ -52,8 +52,8 @@ export function extractPlaceIdFromUrl(url: string): {
     }
   }
 
-  // ftid parameter: ftid=0x...:0x... (Google Search URL format)
-  const ftidMatch = url.match(/ftid=(0x[0-9a-f]+):(0x[0-9a-f]+)/i)
+  // ftid parameter: ftid=0x...:0x... or ftid=0x...%3A0x... (iPhone resolved URL)
+  const ftidMatch = url.match(/ftid=(0x[0-9a-f]+)(?::|%3A)(0x[0-9a-f]+)/i)
   if (ftidMatch) {
     const low = BigInt(ftidMatch[1])
     const high = BigInt(ftidMatch[2])
