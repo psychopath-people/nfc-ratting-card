@@ -112,7 +112,7 @@ export default function DashboardClient() {
         {loading ? (
           <div className="bg-white rounded-2xl p-8 text-center shadow-sm">
             <div className="inline-block w-8 h-8 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
-            <p className="text-sm text-gray-400 mt-3">Mengambil data dari Google Sheets...</p>
+            <p className="text-sm text-gray-400 mt-3">Mengambil data...</p>
           </div>
         ) : filtered.length === 0 ? (
           <div className="bg-white rounded-2xl p-8 text-center shadow-sm">
