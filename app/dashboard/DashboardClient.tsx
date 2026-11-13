@@ -24,11 +24,101 @@ function formatDate(iso: string) {
   }
 }
 
+function ResetPinModal({ card, onClose }: { card: Card; onClose: () => void }) {
+  const [pin, setPin] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!/^\d{4}$/.test(pin)) { setError('PIN harus 4 digit angka'); return }
+    setError('')
+    setLoading(true)
+    try {
+      const res = await fetch('/api/dashboard/reset-pin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cardId: card.cardId, newPin: pin }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setSuccess(true)
+        setTimeout(onClose, 1500)
+      } else {
+        setError(data.error || 'Gagal reset PIN')
+      }
+    } catch {
+      setError('Tidak dapat terhubung ke server')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.4)' }}>
+      <div className="bg-white rounded-3xl shadow-xl p-6 w-full max-w-sm space-y-5">
+        <div>
+          <h2 className="text-lg font-bold text-gray-900">Ganti PIN Kartu</h2>
+          <p className="text-sm text-gray-500 mt-1">
+            <span className="font-mono bg-gray-100 px-2 py-0.5 rounded text-xs">{card.cardId}</span>
+            {' '}{card.cafeName}
+          </p>
+        </div>
+
+        {success ? (
+          <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-sm text-green-700 font-medium text-center">
+            PIN berhasil diubah!
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-600">{error}</div>
+            )}
+            <div>
+              <label className="block text-sm font-semibold text-gray-800 mb-2">PIN Baru (4 digit)</label>
+              <input
+                type="password"
+                value={pin}
+                onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                placeholder="••••"
+                inputMode="numeric"
+                maxLength={4}
+                autoFocus
+                required
+                className="w-full px-4 py-3.5 rounded-xl border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 text-sm text-center tracking-widest"
+              />
+            </div>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-all"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                disabled={loading || pin.length !== 4}
+                className="flex-1 py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50 transition-all"
+                style={{ background: '#1a73e8' }}
+              >
+                {loading ? 'Menyimpan...' : 'Simpan PIN'}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function DashboardClient() {
   const [cards, setCards] = useState<Card[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [loggingOut, setLoggingOut] = useState(false)
+  const [resetTarget, setResetTarget] = useState<Card | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -54,6 +144,10 @@ export default function DashboardClient() {
 
   return (
     <main className="min-h-screen p-4 md:p-8" style={{ background: '#eef2f7' }}>
+      {resetTarget && (
+        <ResetPinModal card={resetTarget} onClose={() => setResetTarget(null)} />
+      )}
+
       <div className="max-w-5xl mx-auto space-y-6">
 
         {/* Header */}
@@ -108,7 +202,7 @@ export default function DashboardClient() {
           </div>
         </div>
 
-        {/* Table / Cards */}
+        {/* Table */}
         {loading ? (
           <div className="bg-white rounded-2xl p-8 text-center shadow-sm">
             <div className="inline-block w-8 h-8 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
@@ -145,14 +239,22 @@ export default function DashboardClient() {
                       </td>
                       <td className="px-5 py-4 text-gray-500">{formatDate(card.updatedAt)}</td>
                       <td className="px-5 py-4">
-                        <a
-                          href={`/edit/${card.cardId}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs font-medium text-blue-500 hover:text-blue-700 transition-colors"
-                        >
-                          Edit Kartu →
-                        </a>
+                        <div className="flex items-center gap-3">
+                          <a
+                            href={`/edit/${card.cardId}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs font-medium text-blue-500 hover:text-blue-700 transition-colors"
+                          >
+                            Edit →
+                          </a>
+                          <button
+                            onClick={() => setResetTarget(card)}
+                            className="text-xs font-medium text-orange-500 hover:text-orange-700 transition-colors"
+                          >
+                            Ganti PIN
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -173,7 +275,6 @@ export default function DashboardClient() {
                   </div>
                   <div className="flex items-center justify-between text-sm text-gray-500 border-t border-gray-50 pt-3">
                     <span><strong className="text-gray-800">{card.tapCount}</strong> tap</span>
-                    <span>{formatDate(card.updatedAt)}</span>
                     <a
                       href={`/edit/${card.cardId}`}
                       target="_blank"
@@ -182,6 +283,12 @@ export default function DashboardClient() {
                     >
                       Edit →
                     </a>
+                    <button
+                      onClick={() => setResetTarget(card)}
+                      className="text-xs font-medium text-orange-500"
+                    >
+                      Ganti PIN
+                    </button>
                   </div>
                 </div>
               ))}
